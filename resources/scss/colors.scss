@@ -1,0 +1,14 @@
+@import "./bootstrap/scss/functions";
+
+$primary: #0074e4;
+$secondary: #36393b;
+$success: #3ab795;
+$info: #29339b;
+$warning: #f6ae2d;
+$danger: #db5461;
+$light: #fbfbfb;
+$dark: #000f08;
+
+$enable-negative-margins: true;
+
+@import "./bootstrap/scss/bootstrap";

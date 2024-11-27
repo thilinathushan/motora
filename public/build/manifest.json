@@ -1,0 +1,18 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-BONcwSn3.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-pN5-EUA-.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/scss/colors.scss": {
+    "file": "assets/colors-l9rD4hz4.css",
+    "src": "resources/scss/colors.scss",
+    "isEntry": true
+  }
+}
