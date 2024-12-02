@@ -37,5 +37,5 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             docker pull ${{ vars.DOCKER_USERNAME }}/motora:latest
-            docker-compose down
-            docker-compose up -d
+            docker compose down
+            docker compose up -d
