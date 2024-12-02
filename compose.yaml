@@ -14,6 +14,7 @@ services:
       - ./:/var/www
     networks:
       - motora
+    command: ["./entrypoint.sh"]
 
   db:
     image: mysql
