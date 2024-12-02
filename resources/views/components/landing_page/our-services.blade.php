@@ -13,7 +13,7 @@
             <div class="row g-4">
                 <div class="col-12 col-md-6 col-lg-3">
                     <div class="text-start p-4 border border-primary border-1 d-flex align-items-start flex-column h-100">
-                        <div class="col-4 ms-n3">
+                        <div class="col-3 ms-n3">
                             <img class="pb-3" src="icons/logo-1.png" alt="login-icon" width="100%">
                         </div>
                         <div>
@@ -27,7 +27,7 @@
                 </div>
                 <div class="col-12 col-md-6 col-lg-3">
                     <div class="text-start p-4 border border-primary border-1 d-flex align-items-start flex-column h-100">
-                        <div class="col-4 ms-n3">
+                        <div class="col-3 ms-n3">
                             <img class="pb-3" src="icons/logo-1.png" alt="login-icon" width="100%">
                         </div>
                         <div>
@@ -39,7 +39,7 @@
                 </div>
                 <div class="col-12 col-md-6 col-lg-3">
                     <div class="text-start p-4 border border-primary border-1 d-flex align-items-start flex-column h-100">
-                        <div class="col-4 ms-n3">
+                        <div class="col-3 ms-n3">
                             <img class="pb-3" src="icons/logo-1.png" alt="login-icon" width="100%">
                         </div>
                         <div>
@@ -51,7 +51,7 @@
                 </div>
                 <div class="col-12 col-md-6 col-lg-3">
                     <div class="text-start p-4 border border-primary border-1 d-flex align-items-start flex-column h-100">
-                        <div class="col-4 ms-n3">
+                        <div class="col-3 ms-n3">
                             <img class="pb-3" src="icons/logo-1.png" alt="login-icon" width="100%">
                         </div>
                         <div>
