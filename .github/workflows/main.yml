@@ -28,6 +28,12 @@ jobs:
           push: true
           tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
 
+      - name: Debugging Info
+        run: |
+          echo "Current Directory: $(pwd)"
+          echo "Files:"
+          ls -la
+
       # SSH into the VM and deploy
       - name: Deploy to VM
         uses: appleboy/ssh-action@v1.2.0
