@@ -32,12 +32,13 @@ RUN if [ -z "$user" ]; then user="user"; fi && \
     mkdir -p /home/$user/.composer && \
     chown -R $user:$user /home/$user
 
-USER $user
-
 # Set working directory
 WORKDIR /var/www
 
 COPY . .
 COPY compose.yaml /var/www/
 
-RUN chown -R $uid:$uid /var/www
+RUN chmod -R 755 /var/www/storage \
+    && chmod -R 755 /var/www/bootstrap/cache
+
+USER $user
