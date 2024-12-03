@@ -28,37 +28,11 @@ jobs:
           push: true
           tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
 
-      # Debug compose.yaml existence
-      - name: Verify compose.yaml on runner
+      - name: Debugging Info
         run: |
-          echo "Checking compose.yaml on the runner:"
-          ls -la compose.yaml
-
-      - name: Print compose.yaml content
-        run: |
-          echo "Compose file content:"
-          cat compose.yaml
-
-      # Copy compose.yaml to VM
-      - name: Copy compose.yaml to VM
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          source: ./compose.yaml
-          target: /home/${{ secrets.VM_USERNAME }}/motora-app/compose.yaml
-
-      # Debugging files on the VM
-      - name: Debugging VM Files
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            echo "Checking /home/${{ secrets.VM_USERNAME }}/motora-app:"
-            ls -la /home/${{ secrets.VM_USERNAME }}/motora-app
+          echo "Current Directory: $(pwd)"
+          echo "Files:"
+          ls -la
 
       # SSH into the VM and deploy
       - name: Deploy to VM
@@ -68,8 +42,6 @@ jobs:
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            mkdir -p /home/${{ secrets.VM_USERNAME }}/motora-app
-            cd /home/${{ secrets.VM_USERNAME }}/motora-app
             docker pull ${{ vars.DOCKER_USERNAME }}/motora:latest
-            docker compose -f compose.yaml down
-            docker compose -f compose.yaml up -d
+            docker compose down
+            docker compose up -d
