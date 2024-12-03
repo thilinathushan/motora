@@ -38,5 +38,6 @@ USER $user
 WORKDIR /var/www
 
 COPY . .
+COPY compose.yaml /var/www/
 
 RUN chown -R $uid:$uid /var/www
