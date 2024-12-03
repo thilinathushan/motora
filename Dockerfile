@@ -4,9 +4,6 @@ FROM php:8.2-fpm
 ARG user
 ARG uid
 
-# Set working directory
-WORKDIR /var/www
-
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
@@ -36,3 +33,10 @@ RUN if [ -z "$user" ]; then user="user"; fi && \
     chown -R $user:$user /home/$user
 
 USER $user
+
+# Set working directory
+WORKDIR /var/www
+
+COPY . .
+
+RUN chown -R $uid:$uid /var/www
