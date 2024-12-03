@@ -30,7 +30,7 @@ jobs:
 
       # Copy compose.yaml to VM
       - name: Copy compose.yaml to VM
-        uses: appleboy/scp-action@v1.0.0
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
