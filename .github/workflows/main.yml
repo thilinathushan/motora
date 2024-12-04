@@ -45,8 +45,8 @@ jobs:
             docker pull ${{ vars.DOCKER_USERNAME }}/motora:latest
             docker compose version
             ls -la
-            cd motora-app
-            ls -la
+
+            ls -la /var
             docker compose -f compose.yaml images
             docker compose -f compose.yaml down
             docker compose -f compose.yaml up -d
