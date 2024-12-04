@@ -46,4 +46,4 @@ jobs:
             docker compose version
             docker compose images
             docker compose down
-            docker compose up -d
+            docker compose -f compose.yaml up -d
