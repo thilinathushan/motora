@@ -36,7 +36,6 @@ RUN if [ -z "$user" ]; then user="user"; fi && \
 WORKDIR /var/www
 
 COPY . .
-COPY compose.yaml /var/www/
 
 RUN chmod -R 755 /var/www/storage \
     && chmod -R 755 /var/www/bootstrap/cache
