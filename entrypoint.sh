@@ -10,6 +10,11 @@ echo "Starting container initialization..."
 # Install PHP dependencies
 composer install --no-interaction --prefer-dist --optimize-autoloader
 
+# Copy .env.example to .env if it doesn't exist
+if [ ! -f /var/www/.env ]; then
+    cp /var/www/.env.example /var/www/.env
+fi
+
 # Generate application key
 php artisan key:generate
 
