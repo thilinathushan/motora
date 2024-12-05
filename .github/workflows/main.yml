@@ -81,5 +81,11 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             cd ~/motora-app
+
+            # Export the environment variable
+            export DOCKER_USERNAME=${{ vars.DOCKER_USERNAME }}
+            # Optional: Debug to confirm the variable is set
+            echo "DOCKER_USERNAME=$DOCKER_USERNAME"
+
             docker compose down
             docker compose up -d
