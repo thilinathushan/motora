@@ -41,13 +41,14 @@ jobs:
 
             # Step 2: Ensure necessary directories exist on the VM
             mkdir -p ~/motora-app
-            
+
       - name: Debugging Files
         run: |
           echo "Current Directory: $(pwd)"
           echo "Files:"
           ls -la
-
+          
+      - uses: actions/checkout@v4
       - name: Transfer compose.yaml to VM
         uses: appleboy/scp-action@v0.1.7
         with:
