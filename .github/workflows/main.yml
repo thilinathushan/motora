@@ -48,8 +48,22 @@ jobs:
           echo "Files:"
           ls -la
 
-      - uses: actions/checkout@v4
-      - name: Transfer compose.yaml to VM
+      # Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Debugging file paths
+      - name: Debug file paths
+        run: |
+          echo "Listing files in the workspace:"
+          ls -la
+          echo "Contents of compose.yaml:"
+          cat compose.yaml || echo "compose.yaml not found!"
+          echo "Contents of entrypoint.sh:"
+          cat entrypoint.sh || echo "entrypoint.sh not found!"
+
+      # Transfer files
+      - name: Transfer compose.yaml and entrypoint.sh to VM
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
@@ -60,6 +74,7 @@ jobs:
             ./entrypoint.sh
           target: ~/motora-app/
 
+      # Run Docker Compose
       - name: Run Docker Compose
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -67,10 +82,6 @@ jobs:
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            # Step 3: Navigate to the deployment directory
             cd ~/motora-app
-
-            # Step 4: Run Docker Compose
-            docker compose version
             docker compose down
             docker compose up -d
