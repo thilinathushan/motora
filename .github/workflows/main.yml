@@ -42,25 +42,9 @@ jobs:
             # Step 2: Ensure necessary directories exist on the VM
             mkdir -p ~/motora-app
 
-      - name: Debugging Files
-        run: |
-          echo "Current Directory: $(pwd)"
-          echo "Files:"
-          ls -la
-
       # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      # Debugging file paths
-      - name: Debug file paths
-        run: |
-          echo "Listing files in the workspace:"
-          ls -la
-          echo "Contents of compose.yaml:"
-          cat compose.yaml || echo "compose.yaml not found!"
-          echo "Contents of entrypoint.sh:"
-          cat entrypoint.sh || echo "entrypoint.sh not found!"
 
       # Transfer files
       - name: Transfer compose.yaml and entrypoint.sh to VM
