@@ -21,10 +21,10 @@ services:
     container_name: motora-db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE: -motora_db}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD: -abc12345678}
-      MYSQL_PASSWORD: ${DB_PASSWORD: -abc12345678}
-      MYSQL_USER: ${DB_USERNAME: -thilina}
+      MYSQL_DATABASE: ${DB_DATABASE:-motora_db}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-abc12345678}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-abc12345678}
+      MYSQL_USER: ${DB_USERNAME:-thilina}
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     networks:
