@@ -46,6 +46,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Generate .env.docker file
+        run: |
+          echo "DOCKER_USERNAME=${{ vars.DOCKER_USERNAME }}" > .env.docker
+          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env.docker
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env.docker
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.docker
+          cat .env.docker  # Optional: Print the file content for debug purposes
+
       # Transfer files
       - name: Transfer compose.yaml and entrypoint.sh to VM
         uses: appleboy/scp-action@v0.1.7
