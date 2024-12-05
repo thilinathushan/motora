@@ -47,7 +47,7 @@ jobs:
           echo "Current Directory: $(pwd)"
           echo "Files:"
           ls -la
-          
+
       - uses: actions/checkout@v4
       - name: Transfer compose.yaml to VM
         uses: appleboy/scp-action@v0.1.7
@@ -55,7 +55,9 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
-          source: ./compose.yaml
+          source: |
+            ./compose.yaml
+            ./entrypoint.sh
           target: ~/motora-app/
 
       - name: Run Docker Compose
@@ -70,5 +72,5 @@ jobs:
 
             # Step 4: Run Docker Compose
             docker compose version
-            docker compose -f compose.yaml down
-            docker compose -f compose.yaml up -d
+            docker compose down
+            docker compose up -d

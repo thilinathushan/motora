@@ -3,6 +3,8 @@
 # Exit immediately if a command fails
 set -e
 
+APP_ENV=${APP_ENV:-production}
+
 echo "Starting container initialization..."
 
 # Install PHP dependencies
