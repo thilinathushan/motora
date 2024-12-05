@@ -52,6 +52,7 @@ jobs:
           echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env.docker
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env.docker
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.docker
+          echo "MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.docker
           cat .env.docker  # Optional: Print the file content for debug purposes
 
       # Transfer files
