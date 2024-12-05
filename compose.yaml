@@ -6,7 +6,7 @@ services:
     #     uid: 1000
     #   context: ./
     #   dockerfile: Dockerfile
-    image: ${{ vars.DOCKER_USERNAME }}/motora:latest
+    image: ${{ DOCKER_USERNAME }}/motora:latest
     container_name: motora-app
     restart: unless-stopped
     working_dir: /var/www/
