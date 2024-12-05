@@ -1,7 +1,6 @@
 # Ignore files that should not be copied to the Docker image
 **/.classpath
 **/.dockerignore
-**/.env
 **/.git
 **/.gitignore
 **/.project
