@@ -81,4 +81,4 @@ jobs:
             echo "DOCKER_USERNAME=$DOCKER_USERNAME"
 
             docker compose down
-            docker compose up -d
+            docker compose --env-file .env.docker up -d
