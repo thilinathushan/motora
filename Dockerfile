@@ -34,9 +34,9 @@ RUN if [ -z "$user" ]; then user="user"; fi && \
 
 # Set working directory
 WORKDIR /var/www
-RUN ls -la
+# RUN ls -la
 COPY . .
-RUN ls -la
+# RUN ls -la
 RUN chmod -R 755 /var/www/storage \
     && chmod -R 755 /var/www/bootstrap/cache
 

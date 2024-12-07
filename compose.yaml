@@ -38,14 +38,14 @@ services:
       - 8000:80
     volumes:
       - ./:/var/www
-      - ./docker-compose/nginx/default.conf:/etc/nginx/conf.d
+      - ./docker-compose/nginx/default.conf:/etc/nginx/conf.d/default.conf
     networks:
       - motora
-    command: >
-      sh -c "
-        cd /etc/nginx/conf.d
-        touch default.conf
-        cp ./docker-compose/nginx/default.conf /etc/nginx/conf.d/default.conf"
+    # command: >
+    #   sh -c "
+    #     cd /etc/nginx/conf.d
+    #     touch default.conf
+    #     cp ./docker-compose/nginx/default.conf /etc/nginx/conf.d/default.conf"
 
     # platform: linux/amd64
 
