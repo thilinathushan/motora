@@ -43,7 +43,9 @@ services:
       - motora
     command: >
       sh -c "
-        cp /var/www/docker-compose/nginx/default.conf etc/nginx/conf.d/default.conf &&
+        ls -la /var/www/docker-compose/nginx
+        ls -la /etc/nginx/conf.d
+        cp /var/www/docker-compose/nginx/default.conf etc/nginx/conf.d/ &&
         cat etc/nginx/conf.d/default.conf"
 
     # platform: linux/amd64
