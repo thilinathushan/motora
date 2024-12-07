@@ -1,6 +1,10 @@
 services:
   app:
     image: ${DOCKER_USERNAME}/motora:latest
+    # image: thilinathushan/motora:latest
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
     container_name: motora-app
     restart: unless-stopped
     working_dir: /var/www/
@@ -13,6 +17,7 @@ services:
 
   db:
     image: mysql
+    # image: mysql:8.0
     container_name: motora-db
     restart: unless-stopped
     env_file: .env.docker
@@ -36,6 +41,12 @@ services:
       - ./docker-compose/nginx:/etc/nginx/conf.d
     networks:
       - motora
+    command: >
+      sh -c "cp ./docker-compose/nginx/default.conf /etc/nginx/sites-available/motora &&
+             ln -s /etc/nginx/sites-available/motora /etc/nginx/sites-enabled/ &&
+             nginx -g 'daemon off;'"
+
+    # platform: linux/amd64
 
 networks:
   motora:
