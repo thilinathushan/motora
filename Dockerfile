@@ -40,4 +40,6 @@ RUN ls -la
 RUN chmod -R 755 /var/www/storage \
     && chmod -R 755 /var/www/bootstrap/cache
 
+EXPOSE 9000
+
 USER $user
