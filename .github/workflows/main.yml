@@ -55,6 +55,15 @@ jobs:
           echo "MYSQL_ROOT_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.docker
           cat .env.docker  # Optional: Print the file content for debug purposes
 
+      - name: Update .env file
+        run: |
+          echo "DB_CONNECTION=mysql" >> .env
+          echo "DB_HOST=motora-db" >> .env
+          echo "DB_PORT=3306" >> .env
+          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+
       # Transfer files
       - name: Transfer compose.yaml and entrypoint.sh to VM
         uses: appleboy/scp-action@v0.1.7
