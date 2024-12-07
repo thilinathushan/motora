@@ -38,12 +38,11 @@ services:
       - 8000:80
     volumes:
       - ./:/var/www
-      - ./docker-compose/nginx/default.conf:/etc/nginx/conf.d
+      # - ./docker-compose/nginx/default.conf:/etc/nginx/conf.d
     networks:
       - motora
-    # command: >
-    #   sh -c "ln -s /etc/nginx/sites-available/motora /etc/nginx/sites-enabled/ &&
-    #          nginx -g 'daemon off;'"
+    command: >
+      sh -c "cp ./docker-compose/nginx/default.conf /etc/nginx/conf.d"
 
     # platform: linux/amd64
 
