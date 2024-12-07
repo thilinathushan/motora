@@ -38,7 +38,7 @@ services:
       - 8000:80
     volumes:
       - ./:/var/www
-      # - ./docker-compose/nginx/default.conf:/etc/nginx/conf.d
+      - ./docker-compose/nginx/default.conf:/etc/nginx/conf.d
     networks:
       - motora
     command: >
