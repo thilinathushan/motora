@@ -42,11 +42,11 @@ services:
     networks:
       - motora
     command: >
-      sh -c "ls -la /etc/nginx/conf.d"
-    #     cd /etc/nginx/conf.d
-    #     touch default.conf
-    #     cp ./docker-compose/nginx/default.conf /etc/nginx/conf.d/default.conf"
+      sh -c "ls -la /etc/nginx/conf.d &&
+        cp ./docker-compose/nginx/default.conf /etc/nginx/conf.d/default.conf"
 
+    # cd /etc/nginx/conf.d
+    # touch default.conf
     # platform: linux/amd64
 
 networks:
