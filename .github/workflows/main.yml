@@ -21,19 +21,6 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Checkout repository
-      # - name: Checkout repository
-      #   uses: actions/checkout@v4
-
-      # - name: Update .env file
-      #   run: |
-      #     echo "DB_CONNECTION=mysql" >> .env
-      #     echo "DB_HOST=motora-db" >> .env
-      #     echo "DB_PORT=3306" >> .env
-      #     echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
-      #     echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
-      #     echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-
       # Build and push the Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
