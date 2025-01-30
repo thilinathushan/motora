@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg bg-white sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="/">
             <img src="/motora-logo-4.png" alt="motora-logo" width="120">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -10,7 +10,7 @@
         <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
             <ul class="navbar-nav me-3 mb-2 mb-lg-0 ">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    <a class="nav-link active" aria-current="page" href="/">Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">About Us</a>
@@ -33,11 +33,36 @@
                         <li><a class="dropdown-item" href="#">Future-Ready Insights</a></li>
                     </ul>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        For Organizations
+                    </a>
+                    <ul class="dropdown-menu">
+                        @php
+                            use App\Models\OrganizationCategory;
+                            $organizationCategories = OrganizationCategory::all();
+                        @endphp
+                        @if (isset($organizationCategories))
+                            @foreach ($organizationCategories as $oranizationCategory)
+                                <li><a class="dropdown-item" href="{{ Route('organization.register', $oranizationCategory->id) }}">{{ $oranizationCategory->name }}</a></li>
+                            @endforeach
+                        @endif
+                    </ul>
+                </li>
             </ul>
-            <div class="d-grid gap-2 d-md-block">
-                <button type="button" class="btn btn-outline-primary me-2">Sign In</button>
-                <button type="button" class="btn btn-primary">Sign Up</button>
-            </div>
+            @guest
+                <div class="d-grid gap-2 d-md-block">
+                    <a href="{{ route('organization.login_view') }}"><button type="button" class="btn btn-outline-primary me-2">Sign In</button></a>
+                    <a href="{{ route('organization.organization_login_selection') }}"><button type="button" class="btn btn-primary">Sign Up</button></a>
+                </div>
+            @endguest
+
+            @auth
+                <div class="d-grid gap-2 d-md-block">
+                    <a href="{{ route('organization.logout') }}"><button type="button" class="btn btn-outline-primary me-2">Sign Out</button></a>
+                </div>
+            @endauth
         </div>
     </div>
 </nav>

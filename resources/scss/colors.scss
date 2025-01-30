@@ -2,7 +2,7 @@
 
 $primary: #0074e4;
 $secondary: #36393b;
-$success: #3ab795;
+$success: #01a66f;
 $info: #29339b;
 $warning: #f6ae2d;
 $danger: #db5461;
@@ -12,3 +12,12 @@ $dark: #000f08;
 $enable-negative-margins: true;
 
 @import "./bootstrap/scss/bootstrap";
+
+a {
+    text-decoration: none;
+}
+
+.nk-menu {
+    padding-left: 0;
+}
+// e5e9f2

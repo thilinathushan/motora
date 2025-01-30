@@ -36,7 +36,7 @@
 
         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center py-4 my-4 border-top d-grid gap-3">
             <img src="/motora-logo-4.png" alt="motora-logo" width="120">
-            <p class="m-0 align-self-center">© 2024 Motora. All rights reserved.</p>
+            <p class="m-0 align-self-center">© 2025 Motora. All rights reserved.</p>
             <ul class="list-unstyled d-flex m-0 align-self-center">
                 <li>
                     <a href="#">
