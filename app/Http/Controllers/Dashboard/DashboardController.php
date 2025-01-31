@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\District;
 use App\Models\Location;
+use App\Models\LocationOrganization;
 use App\Models\OrganizationUser;
 use App\Models\Province;
 use Carbon\Carbon;
@@ -18,6 +19,10 @@ class DashboardController extends Controller
     public function organizationDetails()
     {
         $organization_user = Auth::guard('organization_user')->user();
+
+        if (!$organization_user) {
+            return redirect()->route('organization.login_view');
+        }
 
         if ($organization_user->loc_org_id == null) {
             return $this->addOrganizationDetails($organization_user->id);
@@ -76,6 +81,14 @@ class DashboardController extends Controller
     public function manageLocationDetails()
     {
         // name, address, district, province, postal_code, phone_number, Actions(Edit, Delete)
+        $organization_user = Auth::guard('organization_user')->user();
+
+        if (!$organization_user) {
+            return redirect()->route('organization.login_view');
+        }
+
+        $user_org_id = LocationOrganization::find($organization_user->loc_org_id)->org_id;
+
         $locationDetails = Location::withTrashed()
             ->select([
                 'locations.id',
@@ -89,6 +102,8 @@ class DashboardController extends Controller
             ])
             ->join('districts AS d', 'locations.district_id', 'd.id')
             ->join('provinces AS p', 'locations.province_id', 'p.id')
+            ->join('location_organizations AS lo', 'locations.id', 'lo.location_id')
+            ->where('lo.org_id', $user_org_id)
             ->get();
 
         return view('pages.organization.dashboard.location_details.manage_location', compact('locationDetails'));

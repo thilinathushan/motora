@@ -97,7 +97,7 @@
                     <div class="mb-3 col-md-6">
                         <label for="org_district" class="form-label fw-semibold">Organization District</label>
                         <select class="form-select" id="org_district" name="org_district" required>
-                            @if (!$organization_details_add)
+                            @if ($organization_details_add)
                                 <option value="0" selected>Select Organization District</option>
                             @endif
 
@@ -110,7 +110,7 @@
                     <div class="mb-3 col-md-6">
                         <label for="org_province" class="form-label fw-semibold">Organization Province</label>
                         <select class="form-select" id="org_province" name="org_province" required>
-                            @if (!$organization_details_add)
+                            @if ($organization_details_add)
                                 <option value="0" selected>Select Organization Province</option>
                             @endif
 
