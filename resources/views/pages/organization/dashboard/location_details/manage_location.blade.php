@@ -5,10 +5,10 @@
         <div class="card-body p-4 text-center">
             <div class="text-center mb-4">
                 <h2 class="h2 my-3 fw-bold">
-                    Add Location Details
+                    Manage Location Details
                 </h2>
                 <p class="text-muted">
-                    Let's Add Organization Locations 👋
+                    Let's Manage Organization Locations 👋
                 </p>
             </div>
             <div class="table-responsive">
@@ -36,10 +36,10 @@
                                 <td class="text-center">{{ $locationDetail->postal_code }}</td>
                                 <td class="text-center">{{ $locationDetail->phone_number }}</td>
                                 <td class="text-center">
-                                    <a class="btn btn-primary m-2" href="#">
+                                    <a class="btn btn-primary m-2" href="{{ route('dashboard.editLocationDetails', $locationDetail->id) }}">
                                         <i class="fi fi-rr-pencil"></i> Edit
                                     </a>
-                                    <a class="btn @if($locationDetail->deleted_at == null) btn-danger @else btn-success @endif" href="{{ route('dashboard.location.toggle', $locationDetail->id) }}">
+                                    <a class="btn text-white @if($locationDetail->deleted_at == null) btn-danger @else btn-success  @endif" href="{{ route('dashboard.location.toggle', $locationDetail->id) }}">
                                         @if($locationDetail->deleted_at == null)<i class="fi fi-rr-trash"></i> Delete @else
                                         <i class="fi fi-rr-trash-restore"></i> Restore @endif
                                     </a>

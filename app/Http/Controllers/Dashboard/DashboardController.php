@@ -72,9 +72,33 @@ class DashboardController extends Controller
     // Display Add Location Details
     public function addLocationDetails()
     {
+        $location_details_add = true;
         $districts = District::select('id', 'province_id', 'name')->orderBy('name', 'ASC')->get();
         $provinces = Province::select('id', 'name')->orderBy('name', 'ASC')->get();
-        return view('pages.organization.dashboard.location_details.add_location', compact('districts', 'provinces'));
+        return view('pages.organization.dashboard.location_details.add_location', compact('location_details_add', 'districts', 'provinces'));
+    }
+
+    // Display Edit Location Details
+    public function editLocationDetails($loc_id)
+    {
+        $organization_user = Auth::guard('organization_user')->user();
+
+        if (!$organization_user) {
+            return redirect()->route('organization.login_view');
+        }
+
+        $location_details_add = false;
+        $org_id = LocationOrganization::find($organization_user->loc_org_id)->org_id;
+
+        $location_details = LocationOrganization::select(['l.phone_number', 'l.address', 'l.name AS location', 'l.postal_code', 'l.district_id', 'l.province_id',])
+            ->join('locations AS l', 'location_organizations.location_id', 'l.id')
+            ->where('location_organizations.org_id', $org_id)
+            ->where('l.id', $loc_id)
+            ->first();
+
+        $districts = District::select('id', 'province_id', 'name')->orderBy('name', 'ASC')->get();
+        $provinces = Province::select('id', 'name')->orderBy('name', 'ASC')->get();
+        return view('pages.organization.dashboard.location_details.add_location', compact('loc_id', 'location_details_add', 'location_details', 'districts', 'provinces'));
     }
 
     // Display Manage Location Details
@@ -87,19 +111,10 @@ class DashboardController extends Controller
             return redirect()->route('organization.login_view');
         }
 
-        $user_org_id = LocationOrganization::find($organization_user->loc_org_id)->org_id;
+        $user_org_id = LocationOrganization::withTrashed()->find($organization_user->loc_org_id)->org_id;
 
         $locationDetails = Location::withTrashed()
-            ->select([
-                'locations.id',
-                'locations.name',
-                'locations.address',
-                'd.name AS district',
-                'p.name AS province',
-                'locations.postal_code',
-                'locations.phone_number',
-                'locations.deleted_at',
-            ])
+            ->select(['locations.id', 'locations.name', 'locations.address', 'd.name AS district', 'p.name AS province', 'locations.postal_code', 'locations.phone_number', 'locations.deleted_at'])
             ->join('districts AS d', 'locations.district_id', 'd.id')
             ->join('provinces AS p', 'locations.province_id', 'p.id')
             ->join('location_organizations AS lo', 'locations.id', 'lo.location_id')

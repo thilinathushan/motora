@@ -36,6 +36,7 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/organization_details', 'organizationDetails')->name('dashboard.organization_details');
     Route::get('/dashboard/location_details/add', 'addLocationDetails')->name('dashboard.addLocationDetails');
     Route::get('/dashboard/location_details/view', 'manageLocationDetails')->name('dashboard.manageLocationDetails');
+    Route::get('/dashboard/location_details/edit/{id}', 'editLocationDetails')->name('dashboard.editLocationDetails');
 });
 
 Route::controller(DashboardOrganizationController::class)->group(function () {
@@ -45,6 +46,7 @@ Route::controller(DashboardOrganizationController::class)->group(function () {
 
 Route::controller(LocationController::class)->group(function () {
     Route::post('/dashboard/location/store', 'store_location_details')->name('dashboard.location.store');
+    Route::post('/dashboard/location/update/{id}', 'updateLocationDetails')->name('dashboard.location.update');
     Route::get('/dashboard/location/toggle-status/{id}', 'changeLocationStatus')->name('dashboard.location.toggle');
 });
 

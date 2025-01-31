@@ -48,6 +48,35 @@ class LocationController extends Controller
         return redirect()->route('dashboard.manageLocationDetails');
     }
 
+    public function updateLocationDetails(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'loc_address' => 'required|string|max:255',
+            'loc_location' => 'required|string|max:255',
+            'loc_postal_code' => 'required|string|max:10',
+            'loc_phone_no' => 'required',
+            'loc_district' => 'required',
+            'loc_province' => 'required',
+        ]);
+
+        // Fetch existing location and organization details
+        $location = Location::findOrFail($id);
+
+        // ✅ Update Location Details
+        $location->update([
+            'district_id' => $validated['loc_district'],
+            'province_id' => $validated['loc_province'],
+            'name' => $validated['loc_location'],
+            'address' => $validated['loc_address'],
+            'postal_code' => $validated['loc_postal_code'],
+            'phone_number' => $validated['loc_phone_no'],
+        ]);
+
+        // ✅ Success Message & Redirect
+        session()->flash('success', 'Location Details Updated Successfully.');
+        return redirect()->route('dashboard.manageLocationDetails');
+    }
+
     public function changeLocationStatus($id)
     {
         $location = Location::withTrashed()->findOrFail($id);
