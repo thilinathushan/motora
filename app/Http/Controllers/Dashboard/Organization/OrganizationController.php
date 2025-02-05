@@ -16,7 +16,7 @@ class OrganizationController extends Controller
     public function store_organization_details(Request $request)
     {
         $validated = $request->validate([
-            'org_name' => 'required|string|max:255',
+            'org_name' => 'required',
             'org_category' => 'required',
             'org_phone_no' => 'required',
             'org_address' => 'required|string|max:255',
@@ -43,12 +43,22 @@ class OrganizationController extends Controller
             $path = null;
         }
 
-        $organization = Organization::create([
-            'org_cat_id' => Auth::guard('organization_user')->user()->org_cat_id,
-            'name' => $validated['org_name'],
-            'main_location_id' => $location->id,
-            'br_path' => $path,
-        ]);
+        $authUser = Auth::guard('organization_user')->user();
+
+        if ($authUser->isGovernmentAgency() || $authUser->isEmissionTestCenter()) {
+            $organization = Organization::find($validated['org_name']);
+            $organization->update([
+                'main_location_id' => $location->id,
+                'br_path' => $path,
+            ]);
+        }else {
+            $organization = Organization::create([
+                'org_cat_id' => $authUser->org_cat_id,
+                'name' => $validated['org_name'],
+                'main_location_id' => $location->id,
+                'br_path' => $path,
+            ]);
+        }
 
         $locationOrganization = LocationOrganization::create([
             'org_id' => $organization->id,
@@ -67,7 +77,7 @@ class OrganizationController extends Controller
     public function update_organization_details(Request $request, $id)
     {
         $validated = $request->validate([
-            'org_name' => 'required|string|max:255',
+            'org_name' => 'required',
             'org_category' => 'required',
             'org_phone_no' => 'required',
             'org_address' => 'required|string|max:255',
@@ -108,12 +118,19 @@ class OrganizationController extends Controller
             $path = $organization->br_path; // Keep the existing file if not updated
         }
 
-        // ✅ Update Organization Details
-        $organization->update([
-            'name' => $validated['org_name'],
-            'main_location_id' => $location->id,
-            'br_path' => $path,
-        ]);
+        if(!(Auth::guard('organization_user')->user()->isGovernmentAgency()) && !(Auth::guard('organization_user')->user()->isEmissionTestCenter())) {
+            // ✅ Update Organization Details
+            $organization->update([
+                'name' => $validated['org_name'],
+                'main_location_id' => $location->id,
+                'br_path' => $path,
+            ]);
+        }else{
+            $organization->update([
+                'main_location_id' => $location->id,
+                'br_path' => $path,
+            ]);
+        }
 
         // ✅ Success Message & Redirect
         session()->flash('success', 'Organization Details Updated Successfully.');

@@ -26,4 +26,24 @@ class OrganizationUser extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsTo(UserType::class, 'u_tp_id');
     }
+
+    public function isGovernmentAgency()
+    {
+        return $this->org_cat_id == 1;
+    }
+
+    public function isEmissionTestCenter()
+    {
+        return $this->org_cat_id == 2;
+    }
+
+    public function isInsuranceCompany()
+    {
+        return $this->org_cat_id == 3;
+    }
+
+    public function isServiceCenter()
+    {
+        return $this->org_cat_id == 4;
+    }
 }

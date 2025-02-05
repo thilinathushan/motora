@@ -49,9 +49,26 @@
                         Location Details
                         <x-slot:singleNavItem>
                             <x-dashboard.single-nav-item href="{{ route('dashboard.addLocationDetails') }}">Add Location</x-dashboard.single-nav-item>
-                            <x-dashboard.single-nav-item href="{{ route('dashboard.manageLocationDetails') }}">Manage Location</x-dashboard.single-nav-item>
+                            <x-dashboard.single-nav-item href="{{ route('dashboard.manageLocationDetails') }}">Manage Locations</x-dashboard.single-nav-item>
                         </x-slot:singleNavItem>
                     </x-dashboard.nav-item>
+
+                    @if (Auth::guard('organization_user')->user()->isGovernmentAgency())
+                        <x-dashboard.nav-item href="#"
+                            :active="false"
+                            menuHeading="Vehicle"
+                            :hasSub="true"
+                            >
+                            <x-slot:icon>
+                                <i class="fi fi-rr-car"></i>
+                            </x-slot:icon>
+                            Vehicle Details
+                            <x-slot:singleNavItem>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.addVehicleDetails') }}">Register Vehicle</x-dashboard.single-nav-item>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.manageVehicleDetails') }}">Manage Vehicles</x-dashboard.single-nav-item>
+                            </x-slot:singleNavItem>
+                        </x-dashboard.nav-item>
+                    @endif
 
                     <x-dashboard.nav-item href="#"
                         :active="false"

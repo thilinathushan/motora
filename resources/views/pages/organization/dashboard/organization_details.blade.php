@@ -21,19 +21,38 @@
             </div>
 
             <div class="text-start">
-                <form action="@if ($organization_details_add)
-                        {{ route('dashboard.organization.store') }}
+                <form
+                    action="@if ($organization_details_add) {{ route('dashboard.organization.store') }}
                     @else
-                        {{ route('dashboard.organization.update', $organization_user_id) }}
-                    @endif" method="post" class="row" enctype="multipart/form-data">
+                        {{ route('dashboard.organization.update', $organization_user_id) }} @endif"
+                    method="post" class="row" enctype="multipart/form-data">
 
                     @csrf
 
                     <div class="mb-3">
                         <label for="org_name" class="form-label fw-semibold">Organization Name</label>
-                        <input type="text" class="form-control" id="org_name" name="org_name"
-                            placeholder="Enter Organization Name" required
-                            value="@if(!$organization_details_add){{ $organization_details->name }}@endif">
+                        {{-- if organization category is Government, then need to show DMT or Divitional Secretariat in a dropdown
+                             if organization category is Emission Test Center, then need to show Laugf Eco Sri and Drive Green in a dropdown --}}
+                        @if (Auth::guard('organization_user')->user()->isGovernmentAgency() || Auth::guard('organization_user')->user()->isEmissionTestCenter())
+                            <select class="form-select" id="org_name" name="org_name" required
+                                @if (!$organization_details_add) disabled @endif>
+
+                                @if ($organization_details_add)
+                                    <option value="0" selected>Select Organization</option>
+                                @endif
+
+                                @foreach ($organizations as $organization)
+                                    <option value="{{ $organization->id }}"
+                                        @if (!$organization_details_add && $location_details->organization_id == $organization->id) selected @endif>
+                                        {{ $organization->name }}</option>
+                                @endforeach
+                            </select>
+                        @else
+                            <input type="text" class="form-control" id="org_name" name="org_name"
+                                placeholder="Enter Organization Name" required
+                                value="@if(!$organization_details_add){{ $organization_details->name }}@endif">
+                        @endif
+
                     </div>
                     <div class="mb-3">
                         <label for="org_category" class="form-label fw-semibold">Organization Category</label>
@@ -44,7 +63,8 @@
                     <div class="mb-5 col-md-6">
                         <label for="org_phone_no" class="form-label fw-semibold">Organization Phone Number</label>
                         <input type="text" class="form-control" id="org_phone_no" name="org_phone_no"
-                            placeholder="011 222 3344" maxlength="10" minlength="10" required pattern="\d{10}" inputmode="numeric"
+                            placeholder="011 222 3344" maxlength="10" minlength="10" required pattern="\d{10}"
+                            inputmode="numeric"
                             value="@if(!$organization_details_add){{ $location_details->phone_number }}@endif"
                             onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                     </div>

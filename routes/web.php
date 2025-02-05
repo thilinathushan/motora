@@ -37,6 +37,8 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/location_details/add', 'addLocationDetails')->name('dashboard.addLocationDetails');
     Route::get('/dashboard/location_details/view', 'manageLocationDetails')->name('dashboard.manageLocationDetails');
     Route::get('/dashboard/location_details/edit/{id}', 'editLocationDetails')->name('dashboard.editLocationDetails');
+    Route::get('/dashboard/vehicle_details/add', 'addVehicleDetails')->name('dashboard.addVehicleDetails');
+    Route::get('/dashboard/vehicle_details/view', 'manageVehicleDetails')->name('dashboard.manageVehicleDetails');
 });
 
 Route::controller(DashboardOrganizationController::class)->group(function () {
