@@ -54,13 +54,15 @@
             @guest
                 <div class="d-grid gap-2 d-md-block">
                     <a href="{{ route('organization.login_view') }}"><button type="button" class="btn btn-outline-primary me-2">Sign In</button></a>
-                    <a href="{{ route('organization.organization_login_selection') }}"><button type="button" class="btn btn-primary">Sign Up</button></a>
+                    <a href="{{ route('user.user_registration') }}"><button type="button" class="btn btn-primary">Sign Up</button></a>
                 </div>
             @endguest
 
             @auth
                 <div class="d-grid gap-2 d-md-block">
-                    <a href="{{ route('organization.logout') }}"><button type="button" class="btn btn-outline-primary me-2">Sign Out</button></a>
+                    <form action="{{ route('organization.logout') }}" method="post">
+                        @csrf
+                    <button type="submit" class="btn btn-outline-primary me-2">Sign Out</button></form>
                 </div>
             @endauth
         </div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Dashboard\LocationDetails\LocationController;
 use App\Http\Controllers\Dashboard\Organization\OrganizationController as DashboardOrganizationController;
 use App\Http\Controllers\LandingPage\LandingController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ Route::get('/error_page', function(){
 
 Route::get('/dashboard', function(){
     return view('pages.organization.dashboard.index');
-})->middleware(['auth:organization_user', 'verified'])->name('dashboard');
+})->middleware(['auth:organization_user,web', 'verified'])->name('dashboard');
 
 Route::controller(OrganizationController::class)->group(function () {
     Route::get('/organization/{org_id}/register', 'register')->name('organization.register');
@@ -32,6 +33,11 @@ Route::controller(OrganizationController::class)->group(function () {
     Route::get('/organization/organization_selection', 'organization_login_selection')->name('organization.organization_login_selection');
 });
 
+Route::controller(UserController::class)->group(function () {
+    Route::get('/user/user_registration', 'user_registration')->name('user.user_registration');
+    Route::post('/user/user_store', 'user_store')->name('user.user_store');
+});
+
 Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/organization_details', 'organizationDetails')->name('dashboard.organization_details');
     Route::get('/dashboard/location_details/add', 'addLocationDetails')->name('dashboard.addLocationDetails');
@@ -39,7 +45,7 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/location_details/edit/{id}', 'editLocationDetails')->name('dashboard.editLocationDetails');
     Route::get('/dashboard/vehicle_details/add', 'addVehicleDetails')->name('dashboard.addVehicleDetails');
     Route::get('/dashboard/vehicle_details/view', 'manageVehicleDetails')->name('dashboard.manageVehicleDetails');
-});
+})->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(DashboardOrganizationController::class)->group(function () {
     Route::post('/dashboard/organization/store', 'store_organization_details')->name('dashboard.organization.store');

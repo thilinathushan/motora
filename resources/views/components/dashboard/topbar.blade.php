@@ -42,19 +42,20 @@
                                 </div>
                                 <div class="user-info d-none d-md-block">
                                     <div class="user-status">
-                                        @auth
-                                            {{ Auth::user()->userType->name }}</div>
-                                        @endauth
-                                        @guest
-                                            Administrater
-                                        @endguest
+                                        @if (Auth::guard('organization_user')->check() && isset(Auth::guard('organization_user')->user()->userType))
+                                            {{ Auth::guard('organization_user')->user()->userType->name }}
+                                        @else
+                                            User
+                                        @endif
+                                    </div>
                                     <div class="user-name dropdown-indicator">
-                                        @auth
-                                            {{ Auth::user()->name }}
-                                        @endauth
-                                        @guest
-                                            Thilina Thushan
-                                        @endguest
+                                        @if (Auth::guard('organization_user')->check())
+                                            {{ Auth::guard('organization_user')->user()->name }}
+                                        @elseif (Auth::guard('web')->check())
+                                            {{ Auth::guard('web')->user()->name }}
+                                        @else
+                                            Guest
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -70,17 +71,11 @@
                                             @auth
                                                 {{ Auth::user()->name }}
                                             @endauth
-                                            @guest
-                                                Thilina Thushan
-                                            @endguest
                                         </span>
                                         <span class="sub-text">
                                             @auth
                                                 {{ Auth::user()->email }}
                                             @endauth
-                                            @guest
-                                                admin@motora.lk
-                                            @endguest
                                         </span>
                                     </div>
                                 </div>

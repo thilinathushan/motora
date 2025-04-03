@@ -28,32 +28,35 @@
                         Dashboard
                     </x-dashboard.nav-item>
 
-                    <x-dashboard.nav-item href="{{ route('dashboard.organization_details') }}"
-                        :active="request()->is('dashboard/organization_details')"
-                        menuHeading="Organization"
-                        >
-                        <x-slot:icon>
-                            <i class="fi fi-rs-city"></i>
-                        </x-slot:icon>
-                        Organization Details
-                    </x-dashboard.nav-item>
+                    @if (!Auth::guard('web')->user())
+                        <x-dashboard.nav-item href="{{ route('dashboard.organization_details') }}"
+                            :active="request()->is('dashboard/organization_details')"
+                            menuHeading="Organization"
+                            >
+                            <x-slot:icon>
+                                <i class="fi fi-rs-city"></i>
+                            </x-slot:icon>
+                            Organization Details
+                        </x-dashboard.nav-item>
 
-                    <x-dashboard.nav-item href="#"
-                        :active="false"
-                        menuHeading="Location"
-                        :hasSub="true"
-                        >
-                        <x-slot:icon>
-                            <i class="fi fi-rr-marker"></i>
-                        </x-slot:icon>
-                        Location Details
-                        <x-slot:singleNavItem>
-                            <x-dashboard.single-nav-item href="{{ route('dashboard.addLocationDetails') }}">Add Location</x-dashboard.single-nav-item>
-                            <x-dashboard.single-nav-item href="{{ route('dashboard.manageLocationDetails') }}">Manage Locations</x-dashboard.single-nav-item>
-                        </x-slot:singleNavItem>
-                    </x-dashboard.nav-item>
+                        <x-dashboard.nav-item href="#"
+                            :active="false"
+                            menuHeading="Location"
+                            :hasSub="true"
+                            >
+                            <x-slot:icon>
+                                <i class="fi fi-rr-marker"></i>
+                            </x-slot:icon>
+                            Location Details
+                            <x-slot:singleNavItem>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.addLocationDetails') }}">Add Location</x-dashboard.single-nav-item>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.manageLocationDetails') }}">Manage Locations</x-dashboard.single-nav-item>
+                            </x-slot:singleNavItem>
+                        </x-dashboard.nav-item>
+                    @endif
 
-                    @if (Auth::guard('organization_user')->user()->isGovernmentAgency())
+
+                    @if ((Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isGovernmentAgency()) || Auth::guard('web')->check())
                         <x-dashboard.nav-item href="#"
                             :active="false"
                             menuHeading="Vehicle"

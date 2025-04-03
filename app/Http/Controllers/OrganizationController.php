@@ -72,10 +72,20 @@ class OrganizationController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
-        if(Auth::guard('organization_user')->attempt($credentials)){
+
+        // Check OrganizationUser Guard First
+        if (Auth::guard('organization_user')->attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->intended('/dashboard');
         }
+
+        // Check Default User Guard
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect()->intended('/dashboard');
+        }
+
+        // If authentication fails
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ]);
@@ -88,5 +98,4 @@ class OrganizationController extends Controller
         $request->session()->regenerateToken();
         return redirect('/');
     }
-
 }

@@ -15,7 +15,7 @@
                     @csrf
 
                     <div class="mb-3">
-                        <label for="email" class="form-label fw-semibold">Organizational Email</label>
+                        <label for="email" class="form-label fw-semibold">Email</label>
                         <input type="email" class="form-control form-control-lg" id="email" name="email"
                             placeholder="Email" value="{{ old('email') }}">
                         @error('email')

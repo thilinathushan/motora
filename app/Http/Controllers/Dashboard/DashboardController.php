@@ -134,9 +134,9 @@ class DashboardController extends Controller
     // Display Add Vehicle Details
     public function addVehicleDetails()
     {
-        $organization_user = Auth::guard('organization_user')->user();
+        $user = Auth::check();
 
-        if (!$organization_user) {
+        if (!$user) {
             return redirect()->route('organization.login_view');
         }
         return view('pages.organization.dashboard.vehicle_details.add_vehicle');
