@@ -14,7 +14,8 @@ class organizationCategorySeeder extends Seeder
     public function run(): void
     {
         $organization_categories = [
-            ['name' => 'Government Agency'],
+            ['name' => 'Department of Motor Traffic'],
+            ['name' => 'Divisional Secretariat'],
             ['name' => 'Emission Test Center'],
             ['name' => 'Insurance Company'],
             ['name' => 'Service Center'],

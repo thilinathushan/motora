@@ -9,6 +9,7 @@ use App\Models\LocationOrganization;
 use App\Models\Organization;
 use App\Models\OrganizationUser;
 use App\Models\Province;
+use App\Models\Vehicle;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -97,7 +98,7 @@ class DashboardController extends Controller
         $location_details_add = false;
         $org_id = LocationOrganization::find($organization_user->loc_org_id)->org_id;
 
-        $location_details = LocationOrganization::select(['l.phone_number', 'l.address', 'l.name AS location', 'l.postal_code', 'l.district_id', 'l.province_id',])
+        $location_details = LocationOrganization::select(['l.phone_number', 'l.address', 'l.name AS location', 'l.postal_code', 'l.district_id', 'l.province_id'])
             ->join('locations AS l', 'location_organizations.location_id', 'l.id')
             ->where('location_organizations.org_id', $org_id)
             ->where('l.id', $loc_id)
@@ -118,8 +119,13 @@ class DashboardController extends Controller
             return redirect()->route('organization.login_view');
         }
 
-        $user_org_id = LocationOrganization::withTrashed()->find($organization_user->loc_org_id)->org_id;
+        $user_org_id = LocationOrganization::withTrashed()->find($organization_user->loc_org_id);
 
+        if (!isset($user_org_id)) {
+            session()->flash('error', 'Add Organization Locatio First.');
+            return redirect()->route('dashboard.addLocationDetails');
+        }
+        $user_org_id = $user_org_id->org_id;
         $locationDetails = Location::withTrashed()
             ->select(['locations.id', 'locations.name', 'locations.address', 'd.name AS district', 'p.name AS province', 'locations.postal_code', 'locations.phone_number', 'locations.deleted_at'])
             ->join('districts AS d', 'locations.district_id', 'd.id')
@@ -134,23 +140,33 @@ class DashboardController extends Controller
     // Display Add Vehicle Details
     public function addVehicleDetails()
     {
-        $user = Auth::check();
-
-        if (!$user) {
-            return redirect()->route('organization.login_view');
-        }
-        return view('pages.organization.dashboard.vehicle_details.add_vehicle');
+        $vehicle_details_add = true;
+        return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add'));
     }
 
     // Display Edit Vehicle Details
     public function editVehicleDetails($id)
     {
+        $organization_user = Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic();
 
+        if ($organization_user) {
+            $vehicle_details_add = false;
+            $vehicle_details = Vehicle::find($id);
+        }
+
+        return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add', 'vehicle_details'));
     }
 
     // Display Manage Vehicle Details
     public function manageVehicleDetails()
     {
-
+        // check if the user is government user
+        $organization_user = Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic();
+        if ($organization_user) {
+            $vehicleDetails = Vehicle::get();
+        } else {
+            $vehicleDetails = [];
+        }
+        return view('pages.organization.dashboard.vehicle_details.manage_vehicles', compact('vehicleDetails'));
     }
 }

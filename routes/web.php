@@ -4,6 +4,7 @@ use App\Http\Controllers\CommonController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\LocationDetails\LocationController;
 use App\Http\Controllers\Dashboard\Organization\OrganizationController as DashboardOrganizationController;
+use App\Http\Controllers\Dashboard\VehicleDetails\VehicleController;
 use App\Http\Controllers\LandingPage\LandingController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\UserController;
@@ -45,18 +46,24 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/location_details/edit/{id}', 'editLocationDetails')->name('dashboard.editLocationDetails');
     Route::get('/dashboard/vehicle_details/add', 'addVehicleDetails')->name('dashboard.addVehicleDetails');
     Route::get('/dashboard/vehicle_details/view', 'manageVehicleDetails')->name('dashboard.manageVehicleDetails');
+    Route::get('/dashboard/vehicle_details/edit/{id}', 'editVehicleDetails')->name('dashboard.editVehicleDetails');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(DashboardOrganizationController::class)->group(function () {
     Route::post('/dashboard/organization/store', 'store_organization_details')->name('dashboard.organization.store');
     Route::post('/dashboard/organization/update/{id}', 'update_organization_details')->name('dashboard.organization.update');
-});
+})->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(LocationController::class)->group(function () {
     Route::post('/dashboard/location/store', 'store_location_details')->name('dashboard.location.store');
     Route::post('/dashboard/location/update/{id}', 'updateLocationDetails')->name('dashboard.location.update');
     Route::get('/dashboard/location/toggle-status/{id}', 'changeLocationStatus')->name('dashboard.location.toggle');
-});
+})->middleware(['auth:organization_user,web', 'verified']);
+
+Route::controller(VehicleController::class)->group(function () {
+    Route::post('/dashboard/vehicle/store', 'storeVehicledetails')->name('dashboard.vehicle.store');
+    Route::post('/dashboard/vehicle/update/{id}', 'updateVehicleDetails')->name('dashboard.vehicle.update');
+})->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(CommonController::class)->group(function () {
     Route::get('/get-province/{district_id}', 'getProvince')->name('common.getProvince');

@@ -45,7 +45,7 @@ class OrganizationController extends Controller
 
         $authUser = Auth::guard('organization_user')->user();
 
-        if ($authUser->isGovernmentAgency() || $authUser->isEmissionTestCenter()) {
+        if ($authUser->isDepartmentOfMotorTraffic() || $authUser->isDivisionalSecretariat() || $authUser->isEmissionTestCenter()) {
             $organization = Organization::find($validated['org_name']);
             $organization->update([
                 'main_location_id' => $location->id,
@@ -118,7 +118,7 @@ class OrganizationController extends Controller
             $path = $organization->br_path; // Keep the existing file if not updated
         }
 
-        if(!(Auth::guard('organization_user')->user()->isGovernmentAgency()) && !(Auth::guard('organization_user')->user()->isEmissionTestCenter())) {
+        if(!(Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()) && !(Auth::guard('organization_user')->user()->isDivisionalSecretariat()) && !(Auth::guard('organization_user')->user()->isEmissionTestCenter())) {
             // ✅ Update Organization Details
             $organization->update([
                 'name' => $validated['org_name'],

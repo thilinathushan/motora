@@ -33,7 +33,7 @@
                         <label for="org_name" class="form-label fw-semibold">Organization Name</label>
                         {{-- if organization category is Government, then need to show DMT or Divitional Secretariat in a dropdown
                              if organization category is Emission Test Center, then need to show Laugf Eco Sri and Drive Green in a dropdown --}}
-                        @if (Auth::guard('organization_user')->user()->isGovernmentAgency() || Auth::guard('organization_user')->user()->isEmissionTestCenter())
+                        @if (Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic() || Auth::guard('organization_user')->user()->isDivisionalSecretariat() || Auth::guard('organization_user')->user()->isEmissionTestCenter())
                             <select class="form-select" id="org_name" name="org_name" required
                                 @if (!$organization_details_add) disabled @endif>
 

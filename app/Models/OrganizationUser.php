@@ -27,23 +27,27 @@ class OrganizationUser extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(UserType::class, 'u_tp_id');
     }
 
-    public function isGovernmentAgency()
+    public function isDepartmentOfMotorTraffic()
     {
-        return $this->org_cat_id == 1;
+        return $this->org_cat_id == 5;
+    }
+    public function isDivisionalSecretariat()
+    {
+        return $this->org_cat_id == 6;
     }
 
     public function isEmissionTestCenter()
     {
-        return $this->org_cat_id == 2;
+        return $this->org_cat_id == 7;
     }
 
     public function isInsuranceCompany()
     {
-        return $this->org_cat_id == 3;
+        return $this->org_cat_id == 8;
     }
 
     public function isServiceCenter()
     {
-        return $this->org_cat_id == 4;
+        return $this->org_cat_id == 9;
     }
 }

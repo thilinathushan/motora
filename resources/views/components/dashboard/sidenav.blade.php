@@ -56,7 +56,7 @@
                     @endif
 
 
-                    @if ((Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isGovernmentAgency()) || Auth::guard('web')->check())
+                    @if ((Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic())) || Auth::guard('web')->check())
                         <x-dashboard.nav-item href="#"
                             :active="false"
                             menuHeading="Vehicle"
