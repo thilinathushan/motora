@@ -17,8 +17,7 @@ export default defineConfig({
         port: 5173,
         strictPort: true,
         hmr: {
-            host: "192.168.43.98",
+            host: process.env.HMR_HOST || "localhost",
         },
     },
-
 });
