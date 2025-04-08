@@ -47,6 +47,16 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/vehicle_details/add', 'addVehicleDetails')->name('dashboard.addVehicleDetails');
     Route::get('/dashboard/vehicle_details/view', 'manageVehicleDetails')->name('dashboard.manageVehicleDetails');
     Route::get('/dashboard/vehicle_details/edit/{id}', 'editVehicleDetails')->name('dashboard.editVehicleDetails');
+    Route::get('/dashboard/vehicle_details/find', 'findMyVehicleDetails')->name('dashboard.findMyVehicleDetails');
+    Route::get('/dashboard/vehicle_details/claim', 'claimUserVehicle')->name('dashboard.claimUserVehicle');
+    Route::get('/dashboard/vehicle_details/license', 'licenseVehicle')->name('dashboard.licenseVehicle');
+    Route::get('/dashboard/vehicle_details/make_vehicle_license', 'makeVehicleLicense')->name('dashboard.makeVehicleLicense');
+    Route::get('/dashboard/vehicle_details/manage_vehicle_licenses', 'manageVehicleLicenses')->name('dashboard.manageVehicleLicenses');
+    Route::get('/dashboard/vehicle_details/license/edit/{id}', 'editVehicleLicenses')->name('dashboard.editVehicleLicenses');
+    Route::get('/dashboard/vehicle_details/emission', 'emissionVehicle')->name('dashboard.emissionVehicle');
+    Route::get('/dashboard/vehicle_details/add_vehicle_emission', 'addEmissionVehicle')->name('dashboard.addEmissionVehicle');
+    Route::get('/dashboard/vehicle_details/edit_vehicle_emission/{id}/{odometer}', 'editEmissionVehicle')->name('dashboard.editEmissionVehicle');
+    Route::get('/dashboard/vehicle_details/manage_vehicle_emission', 'manageEmissionVehicle')->name('dashboard.manageEmissionVehicle');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(DashboardOrganizationController::class)->group(function () {
@@ -63,6 +73,12 @@ Route::controller(LocationController::class)->group(function () {
 Route::controller(VehicleController::class)->group(function () {
     Route::post('/dashboard/vehicle/store', 'storeVehicledetails')->name('dashboard.vehicle.store');
     Route::post('/dashboard/vehicle/update/{id}', 'updateVehicleDetails')->name('dashboard.vehicle.update');
+    Route::post('/dashboard/vehicle/findUserVehicle', 'findUserVehicle')->name('dashboard.vehicle.findUserVehicle');
+    Route::post('/dashboard/vehicle/assignVehicleToUser', 'assignVehicleToUser')->name('dashboard.vehicle.assignVehicleToUser');
+    Route::post('/dashboard/vehicle/createVehicleRevenueLicense', 'createVehicleRevenueLicense')->name('dashboard.vehicle.createVehicleRevenueLicense');
+    Route::post('/dashboard/vehicle/updateVehicleRevenueLicense/{id}', 'updateVehicleRevenueLicense')->name('dashboard.vehicle.updateVehicleRevenueLicense');
+    Route::post('/dashboard/vehicle/storeVehicleEmissionDetails', 'storeVehicleEmissionDetails')->name('dashboard.vehicle.storeVehicleEmissionDetails');
+    Route::post('/dashboard/vehicle/updateVehicleEmissionDetails/{id}/{odometer}', 'updateVehicleEmissionDetails')->name('dashboard.vehicle.updateVehicleEmissionDetails');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(CommonController::class)->group(function () {

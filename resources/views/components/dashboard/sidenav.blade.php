@@ -67,11 +67,52 @@
                             </x-slot:icon>
                             Vehicle Details
                             <x-slot:singleNavItem>
-                                <x-dashboard.single-nav-item href="{{ route('dashboard.addVehicleDetails') }}">Register Vehicle</x-dashboard.single-nav-item>
+                                @if (Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()))
+                                    <x-dashboard.single-nav-item href="{{ route('dashboard.addVehicleDetails') }}">Register Vehicle</x-dashboard.single-nav-item>
+                                @endif
+                                @if (Auth::guard('web')->check())
+                                    <x-dashboard.single-nav-item href="{{ route('dashboard.findMyVehicleDetails') }}">Find My Vehicle</x-dashboard.single-nav-item>
+                                @endif
                                 <x-dashboard.single-nav-item href="{{ route('dashboard.manageVehicleDetails') }}">Manage Vehicles</x-dashboard.single-nav-item>
                             </x-slot:singleNavItem>
                         </x-dashboard.nav-item>
                     @endif
+
+                    @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDivisionalSecretariat())
+                        <x-dashboard.nav-item href="#"
+                            :active="false"
+                            menuHeading="Vehicle"
+                            :hasSub="true"
+                            >
+                            <x-slot:icon>
+                                <i class="fi fi-rr-car"></i>
+                            </x-slot:icon>
+                            Vehicle Licensing
+                            <x-slot:singleNavItem>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.licenseVehicle') }}">License Vehicle</x-dashboard.single-nav-item>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.manageVehicleLicenses') }}">Manage Vehicle License</x-dashboard.single-nav-item>
+                            </x-slot:singleNavItem>
+                        </x-dashboard.nav-item>
+                    @endif
+
+                    @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isEmissionTestCenter())
+                        <x-dashboard.nav-item href="#"
+                            :active="false"
+                            menuHeading="Vehicle"
+                            :hasSub="true"
+                            >
+                            <x-slot:icon>
+                                <i class="fi fi-rr-car"></i>
+                            </x-slot:icon>
+                            Vehicle Emission Details
+                            <x-slot:singleNavItem>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.emissionVehicle') }}">Add Vehicle Emission</x-dashboard.single-nav-item>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.manageEmissionVehicle') }}">Manage Vehicle Emission</x-dashboard.single-nav-item>
+                            </x-slot:singleNavItem>
+                        </x-dashboard.nav-item>
+                    @endif
+
+
 
                     <x-dashboard.nav-item href="#"
                         :active="false"

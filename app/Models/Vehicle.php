@@ -48,4 +48,14 @@ class Vehicle extends Model
         'date_of_first_registration',
         'taxes_payable',
     ];
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_vehicles');
+    }
+
+    public function vehicleRevenueLicenses()
+    {
+        return $this->hasMany(VehicleRevenueLicense::class);
+    }
 }

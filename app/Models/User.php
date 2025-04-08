@@ -45,4 +45,10 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    public function vehicles()
+    {
+        return $this->belongsToMany(Vehicle::class, 'user_vehicles');
+    }
+
 }
