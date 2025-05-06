@@ -5,9 +5,9 @@
         <div class="card-body p-4">
             <div class="text-center mb-4">
                 <h2 class="h2 my-3 fw-bold">
-                    Vehicle Emission
+                    Vehicle Service Details
                 </h2>
-                <p class="text-muted">Let's Add your vehicle emission 👋</p>
+                <p class="text-muted">Let's Add your Vehicle Service Details 👋</p>
             </div>
             @if (!$result)
                 <div class="p-4 rounded-4">
@@ -57,7 +57,7 @@
                             </div>
                             <div class="col-md-12 text-center mt-5">
 
-                                <a href="{{ route('dashboard.addEmissionVehicle', $result) }}" class="btn btn-primary">Add Vehicle Emission</a>
+                                <a href="{{ route('dashboard.addVehicleServiceDetails', $result) }}" class="btn btn-primary">Add Vehicle Service Records</a>
                             </div>
                         </div>
                     </div>
@@ -70,7 +70,7 @@
                             </div>
                         </div>
                         <div class="col-md-12 text-center mt-5">
-                            <a href="{{ route('dashboard.emissionVehicle') }}" class="btn btn-primary">Go to Back</a>
+                            <a href="{{ route('dashboard.vehicleServiceDetails') }}" class="btn btn-primary">Go to Back</a>
                         </div>
                     </div>
                 @endif

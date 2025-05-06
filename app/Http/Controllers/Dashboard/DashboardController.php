@@ -13,6 +13,7 @@ use App\Models\UserVehicle;
 use App\Models\Vehicle;
 use App\Models\VehicleEmission;
 use App\Models\VehicleRevenueLicense;
+use App\Models\VehicleService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -334,6 +335,57 @@ class DashboardController extends Controller
         $result['vehicleEmission'] = $vehicleEmission;
         $addVehicleLEmission = false;
         return view('pages.organization.dashboard.vehicle_details.add_emission_vehicle', compact('result', 'addVehicleLEmission'));
+    }
+
+    public function vehicleServiceDetails()
+    {
+        $result = false;
+        return view('pages.organization.dashboard.vehicle_details.vehicle_service_details', compact('result'));
+    }
+
+    public function addVehicleServiceDetails(Request $request)
+    {
+        $addVehicleService = true;
+        $vehicleDetails = $request->all();
+        return view('pages.organization.dashboard.vehicle_details.add_vehicle_service_details', compact('addVehicleService', 'vehicleDetails'));
+    }
+
+    public function manageVehicleServiceDetails()
+    {
+        $vehicleServiceDetails = VehicleService::select([
+                'vehicle_services.*',
+                'o.name AS org_name',
+                'l.name AS loc_name',
+            ])
+            ->join('organizations AS o', 'o.id', 'vehicle_services.vehicle_service_organization_id')
+            ->join('locations AS l', 'l.id', 'vehicle_services.vehicle_service_center_id')
+            ->get();
+
+       return view('pages.organization.dashboard.vehicle_details.manage_vehicle_service_details', compact('vehicleServiceDetails'));
+    }
+
+    public function editVehicleServiceDetails($id)
+    {
+        $vehicleDetails = VehicleService::select([
+                'vehicle_services.*',
+                'o.name AS org_name',
+                'l.name AS loc_name',
+                'v.chassis_number',
+                'v.engine_no',
+                'v.registration_number',
+            ])
+            ->join('vehicles AS v', 'v.id', 'vehicle_services.vehicle_id')
+            ->join('organizations AS o', 'o.id', 'vehicle_services.vehicle_service_organization_id')
+            ->join('locations AS l', 'l.id', 'vehicle_services.vehicle_service_center_id')
+            ->where('vehicle_services.id', $id)
+            ->first();
+
+        if(!isset($vehicleDetails)){
+            return redirect()->route('dashboard.manageVehicleServiceDetails')->with('error', 'Vehicle Service Details not found.');
+        }
+        $addVehicleService = false;
+
+        return view('pages.organization.dashboard.vehicle_details.add_vehicle_service_details', compact('addVehicleService', 'vehicleDetails'));
     }
 
 }

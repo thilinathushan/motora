@@ -155,6 +155,10 @@ class VehicleController extends Controller
         {
             return view('pages.organization.dashboard.vehicle_details.emission_vehicle', compact('result'));
         }
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isServiceCenter())
+        {
+            return view('pages.organization.dashboard.vehicle_details.vehicle_service_details', compact('result'));
+        }
         return view('pages.organization.dashboard.vehicle_details.find_my_vehicle', compact('result'));
     }
 

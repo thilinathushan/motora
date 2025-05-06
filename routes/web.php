@@ -5,6 +5,7 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\LocationDetails\LocationController;
 use App\Http\Controllers\Dashboard\Organization\OrganizationController as DashboardOrganizationController;
 use App\Http\Controllers\Dashboard\VehicleDetails\VehicleController;
+use App\Http\Controllers\Dashboard\VehicleServiceController;
 use App\Http\Controllers\LandingPage\LandingController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\UserController;
@@ -57,6 +58,10 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/vehicle_details/add_vehicle_emission', 'addEmissionVehicle')->name('dashboard.addEmissionVehicle');
     Route::get('/dashboard/vehicle_details/edit_vehicle_emission/{id}/{odometer}', 'editEmissionVehicle')->name('dashboard.editEmissionVehicle');
     Route::get('/dashboard/vehicle_details/manage_vehicle_emission', 'manageEmissionVehicle')->name('dashboard.manageEmissionVehicle');
+    Route::get('/dashboard/vehicle_details/vehicle_service_details', 'vehicleServiceDetails')->name('dashboard.vehicleServiceDetails');
+    Route::get('/dashboard/vehicle_details/add_vehicle_service_details', 'addVehicleServiceDetails')->name('dashboard.addVehicleServiceDetails');
+    Route::get('/dashboard/vehicle_details/manage_vehicle_service_records', 'manageVehicleServiceDetails')->name('dashboard.manageVehicleServiceDetails');
+    Route::get('/dashboard/vehicle_details/edit_vehicle_service_record/{id}', 'editVehicleServiceDetails')->name('dashboard.editVehicleServiceDetails');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(DashboardOrganizationController::class)->group(function () {
@@ -80,6 +85,12 @@ Route::controller(VehicleController::class)->group(function () {
     Route::post('/dashboard/vehicle/storeVehicleEmissionDetails', 'storeVehicleEmissionDetails')->name('dashboard.vehicle.storeVehicleEmissionDetails');
     Route::post('/dashboard/vehicle/updateVehicleEmissionDetails/{id}/{odometer}', 'updateVehicleEmissionDetails')->name('dashboard.vehicle.updateVehicleEmissionDetails');
 })->middleware(['auth:organization_user,web', 'verified']);
+
+Route::controller(VehicleServiceController::class)->group(function () {
+    Route::post('/dashboard/vehicle-service/store', 'storeVehicleServiceDetails')->name('dashboard.vehicleService.store');
+    Route::post('/dashboard/vehicle-service/update/{id}', 'updateVehicleServiceDetails')->name('dashboard.vehicleService.update');
+})->middleware(['auth:organization_user,web', 'verified']);
+
 
 Route::controller(CommonController::class)->group(function () {
     Route::get('/get-province/{district_id}', 'getProvince')->name('common.getProvince');

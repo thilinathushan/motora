@@ -14,7 +14,7 @@
                 </a>
             </div>
             <!-- .nk-header-brand -->
-            <div class="nk-header-news d-none d-xl-block">
+            {{-- <div class="nk-header-news d-none d-xl-block">
                 <div class="nk-news-list">
                     <a class="nk-news-item" href="#">
                         <div class="nk-news-icon">
@@ -30,16 +30,16 @@
                         </div>
                     </a>
                 </div>
-            </div>
+            </div> --}}
             <!-- .nk-header-news -->
             <div class="nk-header-tools">
                 <ul class="nk-quick-nav">
                     <li class="dropdown user-dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             <div class="user-toggle">
-                                <div class="user-avatar sm">
-                                    <em class="icon ni ni-user-alt"></em>
-                                </div>
+                                <div class="me-3" style="width: 40px; height: 40px;">
+                                        <img src="{{ asset('icons/man.png') }}" alt="user avatar" class="rounded-circle">
+                                    </div>
                                 <div class="user-info d-none d-md-block">
                                     <div class="user-status">
                                         @if (Auth::guard('organization_user')->check() && isset(Auth::guard('organization_user')->user()->userType))
@@ -48,7 +48,7 @@
                                             User
                                         @endif
                                     </div>
-                                    <div class="user-name dropdown-indicator">
+                                    <div class="user-name">
                                         @if (Auth::guard('organization_user')->check())
                                             {{ Auth::guard('organization_user')->user()->name }}
                                         @elseif (Auth::guard('web')->check())
@@ -56,6 +56,7 @@
                                         @else
                                             Guest
                                         @endif
+                                        <i class="fi fi-rr-caret-down"></i>
                                     </div>
                                 </div>
                             </div>
@@ -63,19 +64,27 @@
                         <div class="dropdown-menu dropdown-menu-md dropdown-menu-right dropdown-menu-s1">
                             <div class="dropdown-inner user-card-wrap bg-lighter d-none d-md-block">
                                 <div class="user-card">
-                                    <div class="user-avatar">
-                                        <span>AB</span>
+                                    <div class="me-3" style="width: 50px; height: 50px;">
+                                        <img src="{{ asset('icons/man.png') }}" alt="user avatar" class="rounded-circle">
                                     </div>
                                     <div class="user-info">
                                         <span class="lead-text">
-                                            @auth
-                                                {{ Auth::user()->name }}
-                                            @endauth
+                                            @if (Auth::guard('organization_user')->check())
+                                                {{ Auth::guard('organization_user')->user()->name }}
+                                            @elseif (Auth::guard('web')->check())
+                                                {{ Auth::guard('web')->user()->name }}
+                                            @else
+                                                Guest
+                                            @endif
                                         </span>
                                         <span class="sub-text">
-                                            @auth
-                                                {{ Auth::user()->email }}
-                                            @endauth
+                                            @if (Auth::guard('organization_user')->check())
+                                            {{ Auth::guard('organization_user')->user()->email }}
+                                        @elseif (Auth::guard('web')->check())
+                                            {{ Auth::guard('web')->user()->email }}
+                                        @else
+                                            Email
+                                        @endif
                                         </span>
                                     </div>
                                 </div>
@@ -118,7 +127,7 @@
                     <li class="dropdown notification-dropdown mr-n1">
                         <a href="#" class="dropdown-toggle nk-quick-nav-icon" data-toggle="dropdown">
                             <div class="icon-status icon-status-info">
-                                <em class="icon ni ni-bell"></em>
+                                <i class="fi fi-rr-bell-notification-social-media"></i>
                             </div>
                         </a>
                         <div class="dropdown-menu dropdown-menu-xl dropdown-menu-right dropdown-menu-s1">

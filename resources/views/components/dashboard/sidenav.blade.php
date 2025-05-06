@@ -112,7 +112,22 @@
                         </x-dashboard.nav-item>
                     @endif
 
-
+                    @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isServiceCenter())
+                        <x-dashboard.nav-item href="#"
+                            :active="false"
+                            menuHeading="Vehicle"
+                            :hasSub="true"
+                            >
+                            <x-slot:icon>
+                                <i class="fi fi-rr-car"></i>
+                            </x-slot:icon>
+                            Vehicle Service Details
+                            <x-slot:singleNavItem>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.vehicleServiceDetails') }}">Add Service Details</x-dashboard.single-nav-item>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.manageVehicleServiceDetails') }}">Manage Service Details</x-dashboard.single-nav-item>
+                            </x-slot:singleNavItem>
+                        </x-dashboard.nav-item>
+                    @endif
 
                     <x-dashboard.nav-item href="#"
                         :active="false"
