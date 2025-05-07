@@ -159,6 +159,10 @@ class VehicleController extends Controller
         {
             return view('pages.organization.dashboard.vehicle_details.vehicle_service_details', compact('result'));
         }
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isInsuranceCompany())
+        {
+            return view('pages.organization.dashboard.vehicle_details.vehicle_insurance', compact('result'));
+        }
         return view('pages.organization.dashboard.vehicle_details.find_my_vehicle', compact('result'));
     }
 

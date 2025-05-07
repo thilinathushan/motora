@@ -129,6 +129,23 @@
                         </x-dashboard.nav-item>
                     @endif
 
+                    @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isInsuranceCompany())
+                        <x-dashboard.nav-item href="#"
+                            :active="false"
+                            menuHeading="Insurance"
+                            :hasSub="true"
+                            >
+                            <x-slot:icon>
+                                <i class="fi fi-rr-car"></i>
+                            </x-slot:icon>
+                            Vehicle Insurance Details
+                            <x-slot:singleNavItem>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.vehicleInsurance') }}">Add Insurance Details</x-dashboard.single-nav-item>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.manageVehicleInsurance') }}">Manage Insurance Details</x-dashboard.single-nav-item>
+                            </x-slot:singleNavItem>
+                        </x-dashboard.nav-item>
+                    @endif
+
                     <x-dashboard.nav-item href="#"
                         :active="false"
                         menuHeading="User"

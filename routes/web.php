@@ -5,6 +5,7 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\LocationDetails\LocationController;
 use App\Http\Controllers\Dashboard\Organization\OrganizationController as DashboardOrganizationController;
 use App\Http\Controllers\Dashboard\VehicleDetails\VehicleController;
+use App\Http\Controllers\Dashboard\VehicleInsuranceController;
 use App\Http\Controllers\Dashboard\VehicleServiceController;
 use App\Http\Controllers\LandingPage\LandingController;
 use App\Http\Controllers\OrganizationController;
@@ -62,6 +63,10 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/vehicle_details/add_vehicle_service_details', 'addVehicleServiceDetails')->name('dashboard.addVehicleServiceDetails');
     Route::get('/dashboard/vehicle_details/manage_vehicle_service_records', 'manageVehicleServiceDetails')->name('dashboard.manageVehicleServiceDetails');
     Route::get('/dashboard/vehicle_details/edit_vehicle_service_record/{id}', 'editVehicleServiceDetails')->name('dashboard.editVehicleServiceDetails');
+    Route::get('/dashboard/vehicle_details/vehicle_insurance_details', 'vehicleInsurance')->name('dashboard.vehicleInsurance');
+    Route::get('/dashboard/vehicle_details/add_vehicle_insurance_details', 'addVehicleInsurance')->name('dashboard.addVehicleInsurance');
+    Route::get('/dashboard/vehicle_details/manage_vehicle_insurance_records', 'manageVehicleInsurance')->name('dashboard.manageVehicleInsurance');
+    Route::get('/dashboard/vehicle_details/edit_vehicle_insurance_record/{id}', 'editVehicleInsurance')->name('dashboard.editVehicleInsurance');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(DashboardOrganizationController::class)->group(function () {
@@ -91,6 +96,10 @@ Route::controller(VehicleServiceController::class)->group(function () {
     Route::post('/dashboard/vehicle-service/update/{id}', 'updateVehicleServiceDetails')->name('dashboard.vehicleService.update');
 })->middleware(['auth:organization_user,web', 'verified']);
 
+Route::controller(VehicleInsuranceController::class)->group(function () {
+    Route::post('/dashboard/vehicle-insurance/store', 'storeVehicleInsurance')->name('dashboard.vehicleInsurance.store');
+    Route::post('/dashboard/vehicle-insurance/update/{id}', 'updateVehicleInsurance')->name('dashboard.vehicleInsurance.update');
+})->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(CommonController::class)->group(function () {
     Route::get('/get-province/{district_id}', 'getProvince')->name('common.getProvince');

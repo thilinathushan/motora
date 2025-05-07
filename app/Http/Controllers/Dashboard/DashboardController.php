@@ -12,6 +12,7 @@ use App\Models\Province;
 use App\Models\UserVehicle;
 use App\Models\Vehicle;
 use App\Models\VehicleEmission;
+use App\Models\VehicleInsurance;
 use App\Models\VehicleRevenueLicense;
 use App\Models\VehicleService;
 use Carbon\Carbon;
@@ -132,7 +133,7 @@ class DashboardController extends Controller
         $user_org_id = LocationOrganization::withTrashed()->find($organization_user->loc_org_id);
 
         if (!isset($user_org_id)) {
-            session()->flash('error', 'Add Organization Locatio First.');
+            session()->flash('error', 'Add Organization Location First.');
             return redirect()->route('dashboard.addLocationDetails');
         }
         $user_org_id = $user_org_id->org_id;
@@ -150,44 +151,59 @@ class DashboardController extends Controller
     // Display Add Vehicle Details
     public function addVehicleDetails()
     {
-        $vehicle_details_add = true;
-        return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add'));
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()){
+            if(Auth::guard('organization_user')->user()->loc_org_id == null){
+                return redirect()->route('dashboard')->with('error', 'Add Organization Details First.');
+            }
+            $vehicle_details_add = true;
+            return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add'));
+        }else{
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
+        }
     }
 
     // Display Edit Vehicle Details
     public function editVehicleDetails($id)
     {
-        $organization_user = Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic();
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()){
+            $organization_user = Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic();
 
-        if ($organization_user) {
-            $vehicle_details_add = false;
-            $vehicle_details = Vehicle::find($id);
+            if ($organization_user) {
+                $vehicle_details_add = false;
+                $vehicle_details = Vehicle::findOrFail($id);
+            }
+
+            return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add', 'vehicle_details'));
+        } else {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
         }
-
-        return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add', 'vehicle_details'));
     }
 
     // Display Manage Vehicle Details
     public function manageVehicleDetails()
     {
-        // check if the user is government user
-        $organization_user = Auth::guard('organization_user')->user();
-        if (isset($organization_user)) {
-            if($organization_user->isDepartmentOfMotorTraffic()){
-                $vehicleDetails = Vehicle::get();
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()){
+            // check if the user is government user
+            $organization_user = Auth::guard('organization_user')->user();
+            if (isset($organization_user)) {
+                if($organization_user->isDepartmentOfMotorTraffic()){
+                    $vehicleDetails = Vehicle::get();
+                }
+            } else {
+                $user = Auth::guard('web')->user();
+                if(isset($user)){
+                    $vehicleDetails = UserVehicle::join('vehicles', 'user_vehicles.vehicle_id', 'vehicles.id')
+                        ->where('user_vehicles.user_id', $user->id)
+                        ->select('vehicles.*')
+                        ->get();
+                }else{
+                    return redirect()->route('organization.login_view');
+                }
             }
+            return view('pages.organization.dashboard.vehicle_details.manage_vehicles', compact('vehicleDetails'));
         } else {
-            $user = Auth::guard('web')->user();
-            if(isset($user)){
-                $vehicleDetails = UserVehicle::join('vehicles', 'user_vehicles.vehicle_id', 'vehicles.id')
-                    ->where('user_vehicles.user_id', $user->id)
-                    ->select('vehicles.*')
-                    ->get();
-            }else{
-                return redirect()->route('organization.login_view');
-            }
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
         }
-        return view('pages.organization.dashboard.vehicle_details.manage_vehicles', compact('vehicleDetails'));
     }
 
     // Display Find My Vehicle Details
@@ -233,24 +249,32 @@ class DashboardController extends Controller
 
     public function manageVehicleLicenses()
     {
-        $vehicleLicenses = VehicleRevenueLicense::join('vehicles', 'vehicle_revenue_licenses.vehicle_id', 'vehicles.id')
-            ->select('vehicle_revenue_licenses.*', 'vehicles.registration_number', 'vehicles.current_owner_address_idNo', 'vehicles.unladen', 'vehicles.seating_capacity', 'vehicles.class_of_vehicle', 'vehicles.fuel_type')
-            ->get();
-        return view('pages.organization.dashboard.vehicle_details.manage_vehicle_licenses', compact('vehicleLicenses'));
+        if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDivisionalSecretariat()) {
+            $vehicleLicenses = VehicleRevenueLicense::join('vehicles', 'vehicle_revenue_licenses.vehicle_id', 'vehicles.id')
+                ->select('vehicle_revenue_licenses.*', 'vehicles.registration_number', 'vehicles.current_owner_address_idNo', 'vehicles.unladen', 'vehicles.seating_capacity', 'vehicles.class_of_vehicle', 'vehicles.fuel_type')
+                ->get();
+            return view('pages.organization.dashboard.vehicle_details.manage_vehicle_licenses', compact('vehicleLicenses'));
+        } else {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
+        }
     }
 
     public function editVehicleLicenses($id)
     {
-        $vehicleLicenses = VehicleRevenueLicense::join('vehicles', 'vehicle_revenue_licenses.vehicle_id', 'vehicles.id')
-            ->select('vehicle_revenue_licenses.*', 'vehicles.registration_number', 'vehicles.current_owner_address_idNo', 'vehicles.unladen', 'vehicles.seating_capacity', 'vehicles.class_of_vehicle', 'vehicles.fuel_type')
-            ->where('vehicle_revenue_licenses.id', $id)
-            ->first();
+        if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDivisionalSecretariat()) {
+            $vehicleLicenses = VehicleRevenueLicense::join('vehicles', 'vehicle_revenue_licenses.vehicle_id', 'vehicles.id')
+                ->select('vehicle_revenue_licenses.*', 'vehicles.registration_number', 'vehicles.current_owner_address_idNo', 'vehicles.unladen', 'vehicles.seating_capacity', 'vehicles.class_of_vehicle', 'vehicles.fuel_type')
+                ->where('vehicle_revenue_licenses.id', $id)
+                ->first();
 
-        if(!isset($vehicleLicenses)){
-            return redirect()->route('dashboard.manageVehicleLicenses')->with('error', 'Vehicle License not found.');
+            if(!isset($vehicleLicenses)){
+                return redirect()->route('dashboard.manageVehicleLicenses')->with('error', 'Vehicle License not found.');
+            }
+            $addVehicleLicense = false;
+            return view('pages.organization.dashboard.vehicle_details.make_vehicle_license', compact('vehicleLicenses', 'addVehicleLicense'));
+        }else{
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
         }
-        $addVehicleLicense = false;
-        return view('pages.organization.dashboard.vehicle_details.make_vehicle_license', compact('vehicleLicenses', 'addVehicleLicense'));
     }
 
     public function emissionVehicle()
@@ -264,7 +288,9 @@ class DashboardController extends Controller
         $vehicle = Vehicle::select(['id', 'registration_number', 'class_of_vehicle', 'engine_no', 'chassis_number', 'make', 'model', 'year_of_manufacture', 'fuel_type'])->findOrFail($request->vehicle_id);
         if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isEmissionTestCenter()){
             $org_user = Auth::guard('organization_user')->user();
-
+            if($org_user->loc_org_id == null){
+                return redirect()->route('dashboard')->with('error', 'Add Organization Details First.');
+            }
             $org_details = OrganizationUser::join('location_organizations', 'organization_users.loc_org_id', 'location_organizations.id')
                 ->join('organizations AS org', 'location_organizations.org_id', 'org.id')
                 ->join('locations AS loc', 'location_organizations.location_id', 'loc.id')
@@ -272,11 +298,13 @@ class DashboardController extends Controller
                 ->where('organization_users.id', $org_user->id)
                 ->first();
 
+            $result['vehicle'] = $vehicle;
+            $result['org_details'] = $org_details;
+            $addVehicleLEmission = true;
+            return view('pages.organization.dashboard.vehicle_details.add_emission_vehicle', compact('result', 'addVehicleLEmission'));
+        } else {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
         }
-        $result['vehicle'] = $vehicle;
-        $result['org_details'] = $org_details;
-        $addVehicleLEmission = true;
-        return view('pages.organization.dashboard.vehicle_details.add_emission_vehicle', compact('result', 'addVehicleLEmission'));
     }
 
     public function manageEmissionVehicle()
@@ -304,10 +332,10 @@ class DashboardController extends Controller
                 ])
                 ->where('emission_test_organization_id', $org_id)
                 ->get();
+            return view('pages.organization.dashboard.vehicle_details.manage_vehicle_emissions', compact('vehicleEmissions'));
         }else{
-            $vehicleEmissions = [];
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
         }
-        return view('pages.organization.dashboard.vehicle_details.manage_vehicle_emissions', compact('vehicleEmissions'));
     }
 
     public function editEmissionVehicle($id, $odometer)
@@ -323,18 +351,21 @@ class DashboardController extends Controller
                 ->select(['org.name AS org_name', 'org.id AS org_id', 'loc.name AS loc_name', 'loc.id AS loc_id'])
                 ->where('organization_users.id', $org_user->id)
                 ->first();
+
+            $vehicleEmission = VehicleEmission::select(['id', 'odometer', 'rpm_idle', 'hc_idle', 'co_idle', 'rpm_2500', 'hc_2500', 'co_2500', 'average_k_factor'])
+                ->where('vehicle_id', $id)
+                ->where('odometer', $odometer)
+                ->first();
+
+            $result['vehicle'] = $vehicle;
+            $result['org_details'] = $org_details;
+            $result['vehicleEmission'] = $vehicleEmission;
+            $addVehicleLEmission = false;
+            return view('pages.organization.dashboard.vehicle_details.add_emission_vehicle', compact('result', 'addVehicleLEmission'));
+        } else {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
         }
 
-        $vehicleEmission = VehicleEmission::select(['id', 'odometer', 'rpm_idle', 'hc_idle', 'co_idle', 'rpm_2500', 'hc_2500', 'co_2500', 'average_k_factor'])
-            ->where('vehicle_id', $id)
-            ->where('odometer', $odometer)
-            ->first();
-
-        $result['vehicle'] = $vehicle;
-        $result['org_details'] = $org_details;
-        $result['vehicleEmission'] = $vehicleEmission;
-        $addVehicleLEmission = false;
-        return view('pages.organization.dashboard.vehicle_details.add_emission_vehicle', compact('result', 'addVehicleLEmission'));
     }
 
     public function vehicleServiceDetails()
@@ -345,47 +376,148 @@ class DashboardController extends Controller
 
     public function addVehicleServiceDetails(Request $request)
     {
-        $addVehicleService = true;
-        $vehicleDetails = $request->all();
-        return view('pages.organization.dashboard.vehicle_details.add_vehicle_service_details', compact('addVehicleService', 'vehicleDetails'));
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isServiceCenter()){
+            if(Auth::guard('organization_user')->user()->loc_org_id == null){
+                return redirect()->route('dashboard')->with('error', 'Add Organization Details First.');
+            }
+
+            $addVehicleService = true;
+            $vehicleDetails = $request->all();
+            return view('pages.organization.dashboard.vehicle_details.add_vehicle_service_details', compact('addVehicleService', 'vehicleDetails'));
+        } else {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
+        }
     }
 
     public function manageVehicleServiceDetails()
     {
-        $vehicleServiceDetails = VehicleService::select([
-                'vehicle_services.*',
-                'o.name AS org_name',
-                'l.name AS loc_name',
-            ])
-            ->join('organizations AS o', 'o.id', 'vehicle_services.vehicle_service_organization_id')
-            ->join('locations AS l', 'l.id', 'vehicle_services.vehicle_service_center_id')
-            ->get();
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isServiceCenter()){
+            $org_user = Auth::guard('organization_user')->user();
+            $org_id = OrganizationUser::join('location_organizations AS lo', 'organization_users.loc_org_id', 'lo.id')
+                ->where('organization_users.id', $org_user->id)->value('lo.org_id');
 
-       return view('pages.organization.dashboard.vehicle_details.manage_vehicle_service_details', compact('vehicleServiceDetails'));
+
+            $vehicleServiceDetails = VehicleService::select([
+                    'vehicle_services.*',
+                    'o.name AS org_name',
+                    'l.name AS loc_name',
+                ])
+                ->join('organizations AS o', 'o.id', 'vehicle_services.vehicle_service_organization_id')
+                ->join('locations AS l', 'l.id', 'vehicle_services.vehicle_service_center_id')
+                ->where('vehicle_service_organization_id', $org_id)
+                ->get();
+
+            return view('pages.organization.dashboard.vehicle_details.manage_vehicle_service_details', compact('vehicleServiceDetails'));
+        } else {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
+        }
     }
 
     public function editVehicleServiceDetails($id)
     {
-        $vehicleDetails = VehicleService::select([
-                'vehicle_services.*',
-                'o.name AS org_name',
-                'l.name AS loc_name',
-                'v.chassis_number',
-                'v.engine_no',
-                'v.registration_number',
-            ])
-            ->join('vehicles AS v', 'v.id', 'vehicle_services.vehicle_id')
-            ->join('organizations AS o', 'o.id', 'vehicle_services.vehicle_service_organization_id')
-            ->join('locations AS l', 'l.id', 'vehicle_services.vehicle_service_center_id')
-            ->where('vehicle_services.id', $id)
-            ->first();
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isServiceCenter()){
+            $org_user = Auth::guard('organization_user')->user();
+            $org_id = OrganizationUser::join('location_organizations AS lo', 'organization_users.loc_org_id', 'lo.id')
+                ->where('organization_users.id', $org_user->id)->value('lo.org_id');
 
-        if(!isset($vehicleDetails)){
-            return redirect()->route('dashboard.manageVehicleServiceDetails')->with('error', 'Vehicle Service Details not found.');
+            $vehicleDetails = VehicleService::select([
+                    'vehicle_services.*',
+                    'o.name AS org_name',
+                    'l.name AS loc_name',
+                    'v.chassis_number',
+                    'v.engine_no',
+                    'v.registration_number',
+                ])
+                ->join('vehicles AS v', 'v.id', 'vehicle_services.vehicle_id')
+                ->join('organizations AS o', 'o.id', 'vehicle_services.vehicle_service_organization_id')
+                ->join('locations AS l', 'l.id', 'vehicle_services.vehicle_service_center_id')
+                ->where('vehicle_services.id', $id)
+                ->where('vehicle_service_organization_id', $org_id)
+                ->first();
+
+            if(!isset($vehicleDetails)){
+                return redirect()->route('dashboard.manageVehicleServiceDetails')->with('error', 'Vehicle Service Details not found.');
+            }
+            $addVehicleService = false;
+
+            return view('pages.organization.dashboard.vehicle_details.add_vehicle_service_details', compact('addVehicleService', 'vehicleDetails'));
+        } else {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
         }
-        $addVehicleService = false;
-
-        return view('pages.organization.dashboard.vehicle_details.add_vehicle_service_details', compact('addVehicleService', 'vehicleDetails'));
     }
 
+    public function vehicleInsurance()
+    {
+        $result = false;
+        return view('pages.organization.dashboard.vehicle_details.vehicle_service_details', compact('result'));
+    }
+
+    public function addVehicleInsurance(Request $request)
+    {
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isInsuranceCompany()){
+            if(Auth::guard('organization_user')->user()->loc_org_id == null){
+                return redirect()->route('dashboard')->with('error', 'Add Organization Details First.');
+            }
+
+            $addVehicleInsurance = true;
+            $vehicleDetails = $request->all();
+            return view('pages.organization.dashboard.vehicle_details.add_vehicle_insurance', compact('addVehicleInsurance', 'vehicleDetails'));
+        } else {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
+        }
+    }
+
+    public function manageVehicleInsurance()
+    {
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isInsuranceCompany()){
+            $org_user = Auth::guard('organization_user')->user();
+            $org_id = OrganizationUser::join('location_organizations AS lo', 'organization_users.loc_org_id', 'lo.id')
+                ->where('organization_users.id', $org_user->id)->value('lo.org_id');
+
+            $vehicleInsuranceDetails = VehicleInsurance::select([
+                    'vehicle_insurances.*',
+                    'o.name AS org_name',
+                    'l.name AS loc_name',
+                ])
+                ->join('organizations AS o', 'o.id', 'vehicle_insurances.insurance_organization_id')
+                ->join('locations AS l', 'l.id', 'vehicle_insurances.insurance_center_id')
+                ->where('insurance_organization_id', $org_id)
+                ->get();
+            return view('pages.organization.dashboard.vehicle_details.manage_vehicle_insurance', compact('vehicleInsuranceDetails'));
+        } else {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
+        }
+    }
+
+    public function editVehicleInsurance($id)
+    {
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isInsuranceCompany()){
+            $org_user = Auth::guard('organization_user')->user();
+            $org_id = OrganizationUser::join('location_organizations AS lo', 'organization_users.loc_org_id', 'lo.id')
+                ->where('organization_users.id', $org_user->id)->value('lo.org_id');
+
+            $addVehicleInsurance = false;
+            $vehicleDetails = VehicleInsurance::select([
+                    'vehicle_insurances.*',
+                    'o.name AS org_name',
+                    'l.name AS loc_name',
+                    'v.chassis_number',
+                    'v.engine_no',
+                    'v.registration_number',
+                ])
+                ->join('vehicles AS v', 'v.id', 'vehicle_insurances.vehicle_id')
+                ->join('organizations AS o', 'o.id', 'vehicle_insurances.insurance_organization_id')
+                ->join('locations AS l', 'l.id', 'vehicle_insurances.insurance_center_id')
+                ->where('vehicle_insurances.id', $id)
+                ->where('insurance_organization_id', $org_id)
+                ->first();
+
+            return view('pages.organization.dashboard.vehicle_details.add_vehicle_insurance', compact('addVehicleInsurance', 'vehicleDetails'));
+
+        } else {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
+        }
+    }
+
+    
 }
