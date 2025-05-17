@@ -67,6 +67,8 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/vehicle_details/add_vehicle_insurance_details', 'addVehicleInsurance')->name('dashboard.addVehicleInsurance');
     Route::get('/dashboard/vehicle_details/manage_vehicle_insurance_records', 'manageVehicleInsurance')->name('dashboard.manageVehicleInsurance');
     Route::get('/dashboard/vehicle_details/edit_vehicle_insurance_record/{id}', 'editVehicleInsurance')->name('dashboard.editVehicleInsurance');
+    Route::get('/dashboard/vehicle_details/findVehicleOwnership', 'findVehicleOwnership')->name('dashboard.findVehicleOwnership');
+    Route::get('/dashboard/vehicle_details/viewVehicleOwnership', 'viewVehicleOwnership')->name('dashboard.viewVehicleOwnership');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(DashboardOrganizationController::class)->group(function () {
@@ -85,10 +87,12 @@ Route::controller(VehicleController::class)->group(function () {
     Route::post('/dashboard/vehicle/update/{id}', 'updateVehicleDetails')->name('dashboard.vehicle.update');
     Route::post('/dashboard/vehicle/findUserVehicle', 'findUserVehicle')->name('dashboard.vehicle.findUserVehicle');
     Route::post('/dashboard/vehicle/assignVehicleToUser', 'assignVehicleToUser')->name('dashboard.vehicle.assignVehicleToUser');
+    Route::get('/dashboard/vehicle/unassignVehicleFromUser/{id}', 'unassignVehicleFromUser')->name('dashboard.vehicle.unassignVehicleFromUser');
     Route::post('/dashboard/vehicle/createVehicleRevenueLicense', 'createVehicleRevenueLicense')->name('dashboard.vehicle.createVehicleRevenueLicense');
     Route::post('/dashboard/vehicle/updateVehicleRevenueLicense/{id}', 'updateVehicleRevenueLicense')->name('dashboard.vehicle.updateVehicleRevenueLicense');
     Route::post('/dashboard/vehicle/storeVehicleEmissionDetails', 'storeVehicleEmissionDetails')->name('dashboard.vehicle.storeVehicleEmissionDetails');
     Route::post('/dashboard/vehicle/updateVehicleEmissionDetails/{id}/{odometer}', 'updateVehicleEmissionDetails')->name('dashboard.vehicle.updateVehicleEmissionDetails');
+    Route::post('/dashboard/vehicle/changeVehicleOwnership', 'changeVehicleOwnership')->name('dashboard.vehicle.changeVehicleOwnership');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(VehicleServiceController::class)->group(function () {
@@ -114,21 +118,21 @@ Route::controller(CommonController::class)->group(function () {
 Route::get('/email/verify', function () {
     $title = 'Verify Email';
     return view('components.auth.verify-email', compact('title'));
-})->middleware('auth:organization_user')->name('verification.notice');
+})->middleware('auth:organization_user,web')->name('verification.notice');
 
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
     return redirect('/dashboard');
-})->middleware(['auth:organization_user', 'signed'])->name('verification.verify');
+})->middleware(['auth:organization_user,web', 'signed'])->name('verification.verify');
 
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
     return back()->with('message', 'Verification link sent!');
-})->middleware(['auth:organization_user', 'throttle:6,1'])->name('verification.send');
+})->middleware(['auth:organization_user,web', 'throttle:6,1'])->name('verification.send');
 
 Route::get('/check-email-verification-status', function (){
     if(auth()->user()->hasVerifiedEmail()){
         return response()->json(['verified' => true]);
     }
     return response()->json(['verified' => false]);
-})->middleware('auth:organization_user');
+})->middleware('auth:organization_user,web');

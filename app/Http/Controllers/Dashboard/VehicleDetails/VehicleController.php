@@ -163,6 +163,10 @@ class VehicleController extends Controller
         {
             return view('pages.organization.dashboard.vehicle_details.vehicle_insurance', compact('result'));
         }
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic())
+        {
+            return view('pages.organization.dashboard.vehicle_details.vehicle_ownership_details', compact('result'));
+        }
         return view('pages.organization.dashboard.vehicle_details.find_my_vehicle', compact('result'));
     }
 
@@ -175,21 +179,121 @@ class VehicleController extends Controller
             'current_owner_address_idNo' =>  'required|string',
         ]);
 
+        $current_owner_address_idNo = str_replace(["\r", "\n", ":", ",", "."], '', $validated['current_owner_address_idNo']);
+        $current_owner_address_idNo =  strtolower($current_owner_address_idNo);
+
         $vehicle = Vehicle::where('registration_number', $validated['registration_number'])
-        ->where('chassis_number', $validated['chassis_number'])
-        ->where('engine_no', $validated['engine_no'])
-        ->where('current_owner_address_idNo', $validated['current_owner_address_idNo'])
-        ->first();
+            ->where('chassis_number', $validated['chassis_number'])
+            ->where('engine_no', $validated['engine_no'])
+            ->first();
 
         if(isset($vehicle)){
-            $user = Auth::guard('web')->user();
-            UserVehicle::create([
-                'user_id' => $user->id,
-                'vehicle_id' => $vehicle->id
-            ]);
-            return redirect()->route('dashboard.manageVehicleDetails')->with('success', 'Vehicle Claimed Successfully.');
+            $vehicleOwnership = str_replace(["\r", "\n", ":", ",", "."], '', $vehicle->current_owner_address_idNo);
+            $vehicleOwnership =  strtolower($vehicleOwnership);
+
+            if($vehicleOwnership == $current_owner_address_idNo){
+                $user = Auth::guard('web')->user();
+                $userVehicle = UserVehicle::where('user_id', $user->id)->where('vehicle_id', $vehicle->id)->first();
+                if(isset($userVehicle)){
+                    return redirect()->route('dashboard.manageVehicleDetails')->with('error', 'Vehicle already assigned to you.');
+                }
+                UserVehicle::create([
+                    'user_id' => $user->id,
+                    'vehicle_id' => $vehicle->id
+                ]);
+                return redirect()->route('dashboard.manageVehicleDetails')->with('success', 'Vehicle Claimed Successfully.');
+            } else {
+                return redirect()->back()->with('error', 'Vehicle Ownership Details are not matched.');
+            }
         }else{
-            return redirect()->back()->with('error', 'Vehicle Ownership Details are not correct.');
+            return redirect()->back()->with('error', 'Vehicle Details are not available.');
+        }
+    }
+
+    public function unassignVehicleFromUser($id)
+    {
+        if(Auth::guard('web')->check())
+        {
+            $userVehicle = UserVehicle::where('user_id', Auth::guard('web')->user()->id)
+                ->where('vehicle_id', $id)->first();
+
+            if(isset($userVehicle))
+            {
+                $userVehicle->delete();
+                return redirect()->route('dashboard.manageVehicleDetails')->with('success', 'Vehicle Unassigned Successfully.');
+            }
+
+        }else{
+            return redirect()->back()->with('error', 'You are not authorized to perform this action.');
+        }
+    }
+
+    public function changeVehicleOwnership(Request $request)
+    {
+        $validated = $request->validate([
+            'registration_number' => 'required|max:255',
+            'chassis_number' => 'required|string|max:255',
+            'engine_no' => 'required|string|max:255',
+            'new_owner_address_idNo' =>  'required|string',
+            'new_absolute_owner' => 'required|string',
+            'current_owner_address_idNo' =>  'required|string',
+            'vehicle_id' =>  'required|string',
+        ]);
+
+        $vehicle = Vehicle::where('registration_number', $validated['registration_number'])
+            ->where('chassis_number', $validated['chassis_number'])
+            ->where('engine_no', $validated['engine_no'])
+            ->first();
+
+        if(isset($vehicle)){
+            $current_owner_address_idNo = str_replace(["\r", "\n", ":", ",", "."], '', $vehicle->current_owner_address_idNo);
+            $current_owner_address_idNo =  strtolower($current_owner_address_idNo);
+
+            $absolute_owner = str_replace(["\r", "\n", ":", ",", "."], '', $vehicle->absolute_owner);
+            $absolute_owner =  strtolower($absolute_owner);
+
+            // check if current owner details and absolute owner details are same - if true
+            if($current_owner_address_idNo == $absolute_owner){
+                if($vehicle->previous_owners == null){
+                    // abosult owner details are goes to previous owner details
+                    $vehicle->update([
+                        'previous_owners' => [$vehicle->absolute_owner],
+                    ]);
+                } else {
+                    // get the previous owner details and append the absolute owner details at the end
+                    $previous_owners = json_decode($vehicle->previous_owners);
+                    array_push($previous_owners, $vehicle->absolute_owner);
+                    $vehicle->update([
+                        'previous_owners' => $previous_owners,
+                    ]);
+                }
+            } else {
+                // check if current owner details and new owner details are same - if false
+                if($vehicle->previous_owners == null){
+                    // abosult owner details are goes to previous owner details
+                    $previous_owners = [$vehicle->absolute_owner];
+                    array_push($previous_owners, $vehicle->current_owner_address_idNo);
+                    $vehicle->update([
+                        'previous_owners' => $previous_owners,
+                    ]);
+                } else {
+                    $previous_owners = json_decode($vehicle->previous_owners);
+                    // current owner details are goes to previous owner details;
+                    array_push($previous_owners, $vehicle->absolute_owner, $vehicle->current_owner_address_idNo);
+                    $vehicle->update([
+                        'previous_owners' => $previous_owners,
+                    ]);
+                }
+            }
+            // new owner details and new absoulte owner details are same or not thats fine
+            $vehicle->update([
+                'current_owner_address_idNo' => $validated['new_owner_address_idNo'],
+                'absolute_owner' => $validated['new_absolute_owner'],
+            ]);
+            return redirect()->route('dashboard.manageVehicleDetails')->with('success', 'Vehicle Ownership Changed Successfully.');
+
+        } else {
+            return redirect()->back()->with('error', 'Vehicle Details are not available.');
         }
     }
 

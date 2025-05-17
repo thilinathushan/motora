@@ -177,7 +177,7 @@
                         </div>
                         <div class="mb-3 col-md-6">
                             <label for="previous_owners" class="form-label fw-semibold">21.Previous Owners</label>
-                            <textarea class="form-control" id="previous_owners" name="previous_owners" rows="10">@if(!$vehicle_details_add){{ $vehicle_details->previous_owners }}@endif</textarea>
+                            <textarea class="form-control" id="previous_owners" name="previous_owners" rows="10">@if(!$vehicle_details_add)@foreach (json_decode($vehicle_details['previous_owners']) as $owner)@if(!$loop->first){{ "\n\n" }}@endif{{ $owner }}@endforeach @endif</textarea>
                             @error('previous_owners')
                                 <small class="text-danger">{{ $message }}</small>
                             @enderror

@@ -151,8 +151,8 @@ class DashboardController extends Controller
     // Display Add Vehicle Details
     public function addVehicleDetails()
     {
-        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()){
-            if(Auth::guard('organization_user')->user()->loc_org_id == null){
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic() || Auth::guard('web')->user()){
+            if(Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->loc_org_id == null)){
                 return redirect()->route('dashboard')->with('error', 'Add Organization Details First.');
             }
             $vehicle_details_add = true;
@@ -182,7 +182,7 @@ class DashboardController extends Controller
     // Display Manage Vehicle Details
     public function manageVehicleDetails()
     {
-        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()){
+        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic() || Auth::guard('web')->user()){
             // check if the user is government user
             $organization_user = Auth::guard('organization_user')->user();
             if (isset($organization_user)) {
@@ -222,6 +222,37 @@ class DashboardController extends Controller
             'engine_no' => 'required|string|max:255',
         ]);
         return view('pages.organization.dashboard.vehicle_details.claim_vehicle', compact('validated'));
+    }
+
+    // Change Vehicle Ownership
+    public function findVehicleOwnership()
+    {
+        $result = false;
+        return view('pages.organization.dashboard.vehicle_details.vehicle_ownership_details', compact('result'));
+    }
+
+    // Display Vehicle Ownership
+    public function viewVehicleOwnership(Request $request)
+    {
+        $validated = $request->validate([
+            'vehicle_id' => 'required',
+            'registration_number' => 'required|max:255',
+            'chassis_number' => 'required|string|max:255',
+            'engine_no' => 'required|string|max:255',
+        ]);
+        $vehicleDetails = $validated;
+
+        $vehicle = Vehicle::select(['current_owner_address_idNo', 'previous_owners'])
+            ->where('registration_number', $validated['registration_number'])
+            ->where('chassis_number', $validated['chassis_number'])
+            ->where('engine_no', $validated['engine_no'])
+            ->first();
+
+        if(isset($vehicle)){
+            return view('pages.organization.dashboard.vehicle_details.vehicle_ownership', compact('vehicleDetails', 'vehicle'));
+        }else{
+            return redirect()->back()->with('error', 'Vehicle not found');
+        }
     }
 
     public function licenseVehicle()
@@ -519,5 +550,5 @@ class DashboardController extends Controller
         }
     }
 
-    
+
 }

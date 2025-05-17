@@ -69,6 +69,7 @@
                             <x-slot:singleNavItem>
                                 @if (Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()))
                                     <x-dashboard.single-nav-item href="{{ route('dashboard.addVehicleDetails') }}">Register Vehicle</x-dashboard.single-nav-item>
+                                    <x-dashboard.single-nav-item href="{{ route('dashboard.findVehicleOwnership') }}">Ownership Transfer</x-dashboard.single-nav-item>
                                 @endif
                                 @if (Auth::guard('web')->check())
                                     <x-dashboard.single-nav-item href="{{ route('dashboard.findMyVehicleDetails') }}">Find My Vehicle</x-dashboard.single-nav-item>
