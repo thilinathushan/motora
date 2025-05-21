@@ -13,6 +13,8 @@ class VehicleRevenueLicense extends Model
         'license_no',
         'valid_from',
         'valid_to',
+        'ds_organization_id',
+        'ds_center_id'
     ];
     public function vehicle()
     {

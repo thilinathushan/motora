@@ -27,6 +27,7 @@
                                 <th class="text-center">Unladen/Gross Weight</th>
                                 <th class="text-center">Number of Seats</th>
                                 <th class="text-center">Validity Period</th>
+                                <th class="text-center">Location</th>
                                 @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDivisionalSecretariat())
                                     <th class="text-center">Actions</th>
                                 @endif
@@ -45,6 +46,7 @@
                                     <td class="text-center">{{ $vehicleLicense->unladen }}</td>
                                     <td class="text-center">{{ $vehicleLicense->seating_capacity }}</td>
                                     <td class="text-center">{{ $vehicleLicense->valid_from }} - {{ $vehicleLicense->valid_to }}</td>
+                                    <td class="text-center">{{ $vehicleLicense->loc_name }}</td>
                                     @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDivisionalSecretariat())
                                         <td class="text-center">
 

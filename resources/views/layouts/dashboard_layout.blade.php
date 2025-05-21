@@ -23,7 +23,17 @@
     <meta name="apple-mobile-web-app-title" content="Motora" />
 
     <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}" />
+    @livewireStyles
     @vite(['resources/scss/colors.scss', 'resources/js/app.js'])
+    <style>
+        .icon-hover:hover {
+            /* background-color: #36393B; */
+            color: #0074e4;
+        }
+        .icon-hover {
+            color: #36393B;
+        }
+    </style>
 </head>
 {{-- f5f6fa --}}
 
@@ -73,7 +83,7 @@
         </div>
     </div>
 
-
+    @livewireScripts
     <script src="{{ asset('assets/js/bundle.js') }}"></script>
     <script src="{{ asset('assets/js/scripts.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>

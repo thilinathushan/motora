@@ -12,7 +12,6 @@
                 </p>
             </div>
             @if (!empty($vehicleDetails))
-
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle shadow-sm rounded-3 overflow-hidden">
                         <thead class="table-dark align-middle">
@@ -50,7 +49,10 @@
                                 <th class="text-center">Provincial Council</th>
                                 <th class="text-center">Date of First Registration</th>
                                 <th class="text-center">Taxes Payable</th>
-                                @if ((Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()) || Auth::guard('web')->check() && Auth::guard('web')->user())
+                                @if (
+                                    (Auth::guard('organization_user')->check() &&
+                                        Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()) ||
+                                        (Auth::guard('web')->check() && Auth::guard('web')->user()))
                                     <th class="text-center">Actions</th>
                                 @endif
                             </tr>
@@ -90,7 +92,8 @@
                                     </td>
                                     <td class="text-center">{{ $vehicleDetail->seating_capacity }}</td>
                                     <td class="text-center">{{ $vehicleDetail->unladen }}</td>
-                                    <td class="text-center">{{ isset($vehicleDetail->gross) ? $vehicleDetail->gross : '-' }}</td>
+                                    <td class="text-center">
+                                        {{ isset($vehicleDetail->gross) ? $vehicleDetail->gross : '-' }}</td>
                                     <td class="text-center">{{ $vehicleDetail->front }}</td>
                                     <td class="text-center">{{ $vehicleDetail->rear }}</td>
                                     <td class="text-center">{{ $vehicleDetail->dual }}</td>
@@ -98,24 +101,155 @@
                                     <td class="text-center">{{ $vehicleDetail->length_width_height }}</td>
                                     <td class="text-center">{{ $vehicleDetail->provincial_council }}</td>
                                     <td class="text-center">{{ $vehicleDetail->date_of_first_registration }}</td>
-                                    <td class="text-center">{{ isset($vehicleDetail->taxes_payable) ? $vehicleDetail->taxes_payable : '-' }}</td>
-                                @if ((Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()) || Auth::guard('web')->check() && Auth::guard('web')->user())
+                                    <td class="text-center">
+                                        {{ isset($vehicleDetail->taxes_payable) ? $vehicleDetail->taxes_payable : '-' }}
+                                    </td>
+                                    @if (
+                                        (Auth::guard('organization_user')->check() &&
+                                            Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()) ||
+                                            (Auth::guard('web')->check() && Auth::guard('web')->user()))
                                         <td class="text-center">
-                                            @if((Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()))
+                                            @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic())
                                                 <a class="btn btn-primary m-2"
                                                     href="{{ route('dashboard.editVehicleDetails', $vehicleDetail->id) }}">
                                                     <i class="fi fi-rr-pencil"></i> Edit
                                                 </a>
                                             @else
-                                                {{-- @dd($vehicleDetail) --}}
                                                 <a class="btn btn-danger text-white m-2"
-                                                    href="{{ route('dashboard.vehicle.unassignVehicleFromUser', $vehicleDetail->id) }}"
-                                                    >
+                                                    href="{{ route('dashboard.vehicle.unassignVehicleFromUser', $vehicleDetail->id) }}">
                                                     <i class="fi fi-rr-trash"></i> Unassign
                                                 </a>
+                                                @if ($vehicleDetail->verification_score == 4)
+                                                    <a class="btn btn-success text-white m-2">
+                                                        <i class="fi fi-rr-shield-check text-start"></i><span>100% Verified</span>
+                                                    </a>
+                                                @else
+
+                                                    <a class="btn btn-warning text-white m-2" data-bs-toggle="modal"
+                                                        data-bs-target="#verificationModal-{{ $vehicleDetail->id }}"
+                                                        {{-- href="{{ route('dashboard.vehicle.unassignVehicleFromUser', $vehicleDetail->id) }}" --}}>
+                                                        <i class="fi fi-rr-shield-check"></i> Request Verification
+                                                    </a>
+
+                                                    <!-- Verification Instructions Modal -->
+                                                    <div class="modal fade" id="verificationModal-{{ $vehicleDetail->id }}"
+                                                        tabindex="-1" aria-labelledby="verificationModalLabel-{{ $vehicleDetail->id }}"
+                                                        aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header bg-warning text-white">
+                                                                    <h5 class="modal-title text-center" id="verificationModalLabel-{{ $vehicleDetail->id }}">
+                                                                        <i class="fi fi-rr-shield-check"></i> Vehicle Verification Instructions
+                                                                    </h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="alert alert-info">
+                                                                        <p><strong>To verify this vehicle, you need to have at least one record from each of the following organizations:</strong></p>
+                                                                    </div>
+
+                                                                    <div class="row">
+                                                                        <div class="col-md-6">
+                                                                            <div class="card mb-3">
+                                                                                <div class="card-header bg-secondary text-white">
+                                                                                    <i class="fi fi-rr-building"></i>
+                                                                                    Divisional Secretariat
+                                                                                </div>
+                                                                                <div class="card-body text-start">
+                                                                                    <p>Visit your local Divisional Secretariat office to obtain a revenue license for your vehicle.</p>
+                                                                                    <p>Required documents:</p>
+                                                                                    <ol class="list-group list-group-numbered">
+                                                                                        <li class="list-group-item">Vehicle registration certificate</li>
+                                                                                        <li class="list-group-item">Valid insurance certificate</li>
+                                                                                        <li class="list-group-item">Emission test certificate</li>
+                                                                                        <li class="list-group-item">Proof of identity</li>
+                                                                                    </ol>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <div class="card mb-3">
+                                                                                <div class="card-header bg-secondary text-white">
+                                                                                    <i class="fi fi-rr-smoke"></i> Emission Test Center
+                                                                                </div>
+                                                                                <div class="card-body text-start">
+                                                                                    <p>Get your vehicle's emission levels tested at an authorized emission test center.</p>
+                                                                                    <p>Required items:</p>
+                                                                                    <ol class="list-group list-group-numbered">
+                                                                                        <li class="list-group-item">Vehicle registration certificate</li>
+                                                                                        <li class="list-group-item">Vehicle in good running condition</li>
+                                                                                        <li class="list-group-item">Proof of identity</li>
+                                                                                    </ol>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <div class="card mb-3">
+                                                                                <div class="card-header bg-secondary text-white">
+                                                                                    <i class="fi fi-rr-shield"></i> Insurance Company
+                                                                                </div>
+                                                                                <div class="card-body text-start">
+                                                                                    <p>Ensure your vehicle has valid insurance coverage from a registered insurance provider.</p>
+                                                                                    <p>Required documents:</p>
+                                                                                    <ol class="list-group list-group-numbered">
+                                                                                        <li class="list-group-item">Vehicle registration certificate</li>
+                                                                                        <li class="list-group-item">Previous insurance policy (if any)</li>
+                                                                                        <li class="list-group-item">Proof of identity</li>
+                                                                                    </ol>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="col-md-6">
+                                                                            <div class="card mb-3">
+                                                                                <div class="card-header bg-secondary text-white">
+                                                                                    <i class="fi fi-rr-wrench"></i> Service Center
+                                                                                </div>
+                                                                                <div class="card-body text-start">
+                                                                                    <p>Have your vehicle serviced at an authorized service center to ensure it's in good condition.</p>
+                                                                                    <p>Recommended service items:</p>
+                                                                                    <ol class="list-group list-group-numbered">
+                                                                                        <li class="list-group-item">Oil and filter change</li>
+                                                                                        <li class="list-group-item">Brake inspection</li>
+                                                                                        <li class="list-group-item">Tire condition check</li>
+                                                                                        <li class="list-group-item">General vehicle inspection</li>
+                                                                                    </ol>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div class="alert alert-warning mt-3">
+                                                                        <p><strong>Note:</strong> Your vehicle must have at least one record from each of the above organizations to be eligible for verification.</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-outline-secondary"
+                                                                        data-bs-dismiss="modal">Close</button>
+                                                                    <form action="{{ route('dashboard.vehicle.verifyVehicleRegistration') }}" method="post">
+                                                                        @csrf
+                                                                        <input type="hidden" name="vehicle_id" value="{{ $vehicleDetail->id }}">
+                                                                        <input type="hidden" name="vehicle_registration_number" value="{{ $vehicleDetail->registration_number }}">
+                                                                        <input type="hidden" name="vehicle_chassis_number" value="{{ $vehicleDetail->chassis_number }}">
+                                                                        <input type="hidden" name="vehicle_engine_number" value="{{ $vehicleDetail->engine_no }}">
+
+                                                                        <button type="submit" class="btn btn-warning text-white">
+                                                                            <i class="fi fi-rr-shield-check"></i> Proceed with Verification
+                                                                        </button>
+                                                                    </form>
+                                                                    {{-- <a @method('post') href="" class="btn btn-warning text-white">
+                                                                        <i class="fi fi-rr-shield-check"></i> Proceed with Verification
+                                                                    </a> --}}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
                                             @endif
-                                            {{-- <a class="btn text-white @if($vehicleDetail->deleted_at == null) btn-danger @else btn-success  @endif" href="{{ route('dashboard.location.toggle', $vehicleDetail->id) }}">
-                                                @if($vehicleDetail->deleted_at == null)<i class="fi fi-rr-trash"></i> Delete @else
+                                            {{-- <a class="btn text-white @if ($vehicleDetail->deleted_at == null) btn-danger @else btn-success  @endif" href="{{ route('dashboard.location.toggle', $vehicleDetail->id) }}">
+                                                @if ($vehicleDetail->deleted_at == null)<i class="fi fi-rr-trash"></i> Delete @else
                                                 <i class="fi fi-rr-trash-restore"></i> Restore @endif
                                             </a> --}}
                                         </td>

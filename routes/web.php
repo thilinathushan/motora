@@ -69,6 +69,7 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/vehicle_details/edit_vehicle_insurance_record/{id}', 'editVehicleInsurance')->name('dashboard.editVehicleInsurance');
     Route::get('/dashboard/vehicle_details/findVehicleOwnership', 'findVehicleOwnership')->name('dashboard.findVehicleOwnership');
     Route::get('/dashboard/vehicle_details/viewVehicleOwnership', 'viewVehicleOwnership')->name('dashboard.viewVehicleOwnership');
+    Route::get('/dashboard/vehicle/verifyVehicle/{id}', 'verifyVehicle')->name('dashboard.vehicle.verifyVehicle');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(DashboardOrganizationController::class)->group(function () {
@@ -93,6 +94,10 @@ Route::controller(VehicleController::class)->group(function () {
     Route::post('/dashboard/vehicle/storeVehicleEmissionDetails', 'storeVehicleEmissionDetails')->name('dashboard.vehicle.storeVehicleEmissionDetails');
     Route::post('/dashboard/vehicle/updateVehicleEmissionDetails/{id}/{odometer}', 'updateVehicleEmissionDetails')->name('dashboard.vehicle.updateVehicleEmissionDetails');
     Route::post('/dashboard/vehicle/changeVehicleOwnership', 'changeVehicleOwnership')->name('dashboard.vehicle.changeVehicleOwnership');
+    Route::post('/dashboard/vehicle/verifyVehicleRegistration', 'verifyVehicleRegistration')->name('dashboard.vehicle.verifyVehicleRegistration');
+    Route::get('/dashboard/vehicle/markAllAsRead', 'markAllAsRead')->name('dashboard.vehicle.markAllAsRead');
+    Route::get('/dashboard/vehicle/markAsRead/{id}', 'markAsRead')->name('dashboard.vehicle.markAsRead');
+    Route::post('/dashboard/vehicle/verifyVehicleRegistrationDetails/{id}', 'verifyVehicleRegistrationDetails')->name('dashboard.vehicle.verifyVehicleRegistrationDetails');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(VehicleServiceController::class)->group(function () {

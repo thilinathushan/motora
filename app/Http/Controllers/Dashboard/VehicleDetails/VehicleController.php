@@ -3,10 +3,16 @@
 namespace App\Http\Controllers\Dashboard\VehicleDetails;
 
 use App\Http\Controllers\Controller;
+use App\Models\LocationOrganization;
+use App\Models\OrganizationUser;
 use App\Models\UserVehicle;
 use App\Models\Vehicle;
 use App\Models\VehicleEmission;
+use App\Models\VehicleInsurance;
 use App\Models\VehicleRevenueLicense;
+use App\Models\VehicleService;
+use App\Models\VehicleVerificationHistory;
+use App\Notifications\VehicleVerification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -307,18 +313,31 @@ class VehicleController extends Controller
             'vehicle_id' => 'required|integer',
         ]);
 
-        $vehicle = Vehicle::findOrFail($validated['vehicle_id']);
-        VehicleRevenueLicense::create([
-            'vehicle_id' => $vehicle->id,
-            'vehicle_registration_number' => $vehicle->registration_number,
-            'license_date' => $validated['license_date'],
-            'license_no' => $validated['license_number'],
-            'valid_from' => $validated['valid_from'],
-            'valid_to' => $validated['valid_to']
-        ]);
+        if(Auth::guard('organization_user')->check())
+        {
+            // need to find the organization id and the organization location id
+            $location_organization = LocationOrganization::select(['o.id', 'location_organizations.location_id'])
+                ->join('organizations AS o', 'location_organizations.org_id', 'o.id')
+                ->where('location_organizations.id', Auth::guard('organization_user')->user()->loc_org_id)
+                ->first();
 
-        session()->flash('success', 'Vehicle Revenue License Created Successfully.');
-        return redirect()->route('dashboard.manageVehicleLicenses');
+            $vehicle = Vehicle::findOrFail($validated['vehicle_id']);
+            VehicleRevenueLicense::create([
+                'vehicle_id' => $vehicle->id,
+                'vehicle_registration_number' => $vehicle->registration_number,
+                'license_date' => $validated['license_date'],
+                'license_no' => $validated['license_number'],
+                'valid_from' => $validated['valid_from'],
+                'valid_to' => $validated['valid_to'],
+                'ds_organization_id' => $location_organization->id,
+                'ds_center_id' => $location_organization->location_id,
+            ]);
+
+            session()->flash('success', 'Vehicle Revenue License Created Successfully.');
+            return redirect()->route('dashboard.manageVehicleLicenses');
+        } else {
+            return redirect()->back()->with('error', 'You are not authorized to perform this action.');
+        }
     }
 
     public function updateVehicleRevenueLicense(Request $request, $id)
@@ -421,5 +440,358 @@ class VehicleController extends Controller
 
         session()->flash('success', 'Vehicle Emission Details Updated Successfully.');
         return redirect()->route('dashboard.manageEmissionVehicle');
+    }
+
+    public function verifyVehicleRegistration(Request $request)
+    {
+        $validated = $request->validate([
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'vehicle_registration_number' => 'required|string|max:255',
+            'vehicle_chassis_number' => 'required|string|max:255',
+            'vehicle_engine_number' => 'required|string|max:255',
+        ]);
+
+        if(!(Auth::guard('web')->check())) {
+            return redirect()->back()->with('error', 'You are not authorized to perform this action.');
+        }
+
+        $vehicle = Vehicle::select(['id', 'registration_number', 'chassis_number', 'engine_no', 'verification_score'])
+            ->where('id', $validated['vehicle_id'])
+            ->where('registration_number', $validated['vehicle_registration_number'])
+            ->where('chassis_number', $validated['vehicle_chassis_number'])
+            ->where('engine_no', $validated['vehicle_engine_number'])
+            ->first();
+
+        if (isset($vehicle) && $vehicle->verification_score < 4) {
+            // find nearest divisional secretariat using latest vehicle revenue license details
+            $ds_center = VehicleRevenueLicense::where('vehicle_id', $validated['vehicle_id'])
+                ->where('vehicle_registration_number', $validated['vehicle_registration_number'])
+                ->latest()
+                ->first();
+
+            // find nearest emission test center using latest vehicle emission details
+            $emission_center = VehicleEmission::where('vehicle_id', $validated['vehicle_id'])
+                ->where('vehicle_registration_number', $validated['vehicle_registration_number'])
+                ->latest()
+                ->first();
+
+            // find nearest isurance company using latest vehicle insurance details
+            $insurance_company = VehicleInsurance::where('vehicle_id', $validated['vehicle_id'])
+                ->where('vehicle_registration_number', $validated['vehicle_registration_number'])
+                ->latest()
+                ->first();
+
+            // find nearest vehicle service center using latest vehicle service details
+            $service_center = VehicleService::where('vehicle_id', $validated['vehicle_id'])
+                ->where('vehicle_registration_number', $validated['vehicle_registration_number'])
+                ->latest()
+                ->first();
+
+            $vehicleVerificationHistory = VehicleVerificationHistory::where('vehicle_id', $validated['vehicle_id'])
+                ->where('vehicle_registration_number', $validated['vehicle_registration_number'])
+                ->first();
+
+            if(isset($vehicleVerificationHistory)){
+
+                if($vehicleVerificationHistory->ds_verification == 0){
+                    // resend the verification request to divisional secretariat
+                    if(isset($ds_center)){
+                        $this->sendNotificationToDS($ds_center, $vehicle);
+
+                        if($vehicleVerificationHistory->ds_organization_id == null || $vehicleVerificationHistory->ds_center_id == null){
+                            $vehicleVerificationHistory->update([
+                                'ds_organization_id' => $ds_center->ds_organization_id,                                
+                                'ds_center_id' => $ds_center->ds_center_id
+                            ]);
+                        }
+                    }
+                }
+
+                if($vehicleVerificationHistory->emission_verification == 0){
+                    // resend the verification request to emission test center
+                    if(isset($emission_center)){
+                        $this->sendNotificationToETC($emission_center, $vehicle);
+
+                        if($vehicleVerificationHistory->emission_organization_id == null || $vehicleVerificationHistory->emission_center_id == null){
+                            $vehicleVerificationHistory->update([
+                                'emission_organization_id' => $emission_center->emission_test_organization_id,                                
+                                'emission_center_id' => $emission_center->emission_test_center_id
+                            ]);
+                        }
+                    }
+                }
+
+                if($vehicleVerificationHistory->insurance_verification == 0){
+                    // resend the verification request to insurance company
+                    if(isset($insurance_company)){
+                        $this->sendNotificationToInsurance($insurance_company, $vehicle);
+
+                        if($vehicleVerificationHistory->insurance_organization_id == null || $vehicleVerificationHistory->insurance_center_id == null){
+                            $vehicleVerificationHistory->update([
+                                'insurance_organization_id' => $insurance_company->insurance_organization_id,                                
+                                'insurance_center_id' => $insurance_company->insurance_center_id
+                            ]);
+                        }
+                    }
+                }
+
+                if($vehicleVerificationHistory->service_verification == 0){
+                    // resend the verification request to vehicle service center
+                    if(isset($service_center)){
+                        $this->sendNotificationToService($service_center, $vehicle);
+
+                        if($vehicleVerificationHistory->service_organization_id == null || $vehicleVerificationHistory->service_center_id == null){
+                            $vehicleVerificationHistory->update([
+                                'service_organization_id' => $service_center->vehicle_service_organization_id,                                
+                                'service_center_id' => $service_center->vehicle_service_center_id
+                            ]);
+                        }
+                    }
+                }
+
+            } else {
+                // send the verification request to divisional secretariat
+                if(isset($ds_center)){
+                    $this->sendNotificationToDS($ds_center, $vehicle);
+                }
+
+                // send the verification request to emission test center
+                if(isset($emission_center)){
+                    $this->sendNotificationToETC($emission_center, $vehicle);
+                }
+
+                // send the verification request to insurance company
+                if(isset($insurance_company)){
+                    $this->sendNotificationToInsurance($insurance_company, $vehicle);
+                }
+
+                // send the verification request to vehicle service center
+                if(isset($service_center)){
+                    $this->sendNotificationToService($service_center, $vehicle);
+                }
+
+                // create a new vehicle verification history
+                if(isset($ds_center) || isset($emission_center) || isset($insurance_company) || isset($service_center)){
+                    VehicleVerificationHistory::create([
+                        'vehicle_id' => $validated['vehicle_id'],
+                        'vehicle_registration_number' => $validated['vehicle_registration_number'],
+                        'ds_organization_id' => isset($ds_center) ? $ds_center->ds_organization_id : null,
+                        'ds_center_id' => isset($ds_center) ? $ds_center->ds_center_id : null,
+                        'ds_verification' => 0,
+                        'ds_verification_date' => null,
+                        'emission_organization_id' => isset($emission_center) ? $emission_center->emission_test_organization_id : null,
+                        'emission_center_id' => isset($emission_center) ? $emission_center->emission_test_center_id : null,
+                        'emission_verification' => 0,
+                        'emission_verification_date' => null,
+                        'insurance_organization_id' => isset($insurance_company) ? $insurance_company->insurance_organization_id : null,
+                        'insurance_center_id' => isset($insurance_company) ? $insurance_company->insurance_center_id : null,
+                        'insurance_verification' => 0,
+                        'insurance_verification_date' => null,
+                        'service_organization_id' => isset($service_center) ? $service_center->vehicle_service_organization_id : null,
+                        'service_center_id' => isset($service_center) ? $service_center->vehicle_service_center_id : null,
+                        'service_verification' => 0,
+                        'service_verification_date' => null,
+                    ]);
+                }
+            }
+            // display a message to the user that the verification request has been sent
+            return redirect()->route('dashboard.manageVehicleDetails')->with('success', 'Verification request has been sent');
+        } else {
+            // display a message to the user that the vehicle is already verified
+            return redirect()->route('dashboard.manageVehicleDetails')->with('error', 'Vehicle is already verified');
+        }
+    }
+
+    public function sendNotificationToDS($ds_center, $vehicle)
+    {
+        // send the verification request to divisional secretariat
+        if(isset($ds_center)){
+            $location_organization = LocationOrganization::select(['location_organizations.id AS loc_org_id', 'o.org_cat_id AS org_cat_id', 'location_organizations.org_id AS org_id', 'location_organizations.location_id AS loc_id'])
+                ->join('organizations AS o', 'location_organizations.org_id', 'o.id')
+                ->where('org_id', $ds_center->ds_organization_id)
+                ->where('location_id', $ds_center->ds_center_id)
+                ->first();
+        }
+        if(isset($location_organization)){
+            $ds_organization = OrganizationUser::where('org_cat_id', $location_organization->org_cat_id)
+                ->where('loc_org_id', $location_organization->loc_org_id)
+                ->first();
+
+            if(isset($ds_organization)){
+                $organization['id'] = $location_organization->org_id;
+                $organization['location_id'] = $location_organization->loc_id;
+                $action_url = '#';
+                $ds_organization->notify(new VehicleVerification($vehicle, Auth::guard('web')->user(), $organization, $action_url));
+            }
+        }
+    }
+
+    public function sendNotificationToETC($emission_center, $vehicle){
+        if(isset($emission_center)){
+            $location_organization = LocationOrganization::select(['location_organizations.id AS loc_org_id', 'o.org_cat_id AS org_cat_id', 'location_organizations.org_id AS org_id', 'location_organizations.location_id AS loc_id'])
+                ->join('organizations AS o', 'location_organizations.org_id', 'o.id')
+                ->where('org_id', $emission_center->emission_test_organization_id)
+                ->where('location_id', $emission_center->emission_test_center_id)
+                ->first();
+        }
+        if(isset($location_organization)){
+            $emission_organization = OrganizationUser::where('org_cat_id', $location_organization->org_cat_id)
+                ->where('loc_org_id', $location_organization->loc_org_id)
+                ->first();
+
+            if(isset($emission_organization)){
+                $organization['id'] = $location_organization->org_id;
+                $organization['location_id'] = $location_organization->loc_id;
+                $action_url = '#';
+                $emission_organization->notify(new VehicleVerification($vehicle, Auth::guard('web')->user(), $organization, $action_url));
+            }
+        }
+    }
+
+    public function sendNotificationToInsurance($insurance_company, $vehicle){
+        if(isset($insurance_company)){
+            $location_organization = LocationOrganization::select(['location_organizations.id AS loc_org_id', 'o.org_cat_id AS org_cat_id', 'location_organizations.org_id AS org_id', 'location_organizations.location_id AS loc_id'])
+                ->join('organizations AS o', 'location_organizations.org_id', 'o.id')
+                ->where('org_id', $insurance_company->insurance_organization_id)
+                ->where('location_id', $insurance_company->insurance_center_id)
+                ->first();
+        }
+        if(isset($location_organization)){
+            $insurance_organization = OrganizationUser::where('org_cat_id', $location_organization->org_cat_id)
+                ->where('loc_org_id', $location_organization->loc_org_id)
+                ->first();
+
+            if(isset($insurance_organization)){
+                $organization['id'] = $location_organization->org_id;
+                $organization['location_id'] = $location_organization->loc_id;
+                $action_url = '#';
+                $insurance_organization->notify(new VehicleVerification($vehicle, Auth::guard('web')->user(), $organization, $action_url));
+            }
+        }
+    }
+
+    public function sendNotificationToService($service_center, $vehicle){
+        if(isset($service_center)){
+            $location_organization = LocationOrganization::select(['location_organizations.id AS loc_org_id', 'o.org_cat_id AS org_cat_id', 'location_organizations.org_id AS org_id', 'location_organizations.location_id AS loc_id'])
+                ->join('organizations AS o', 'location_organizations.org_id', 'o.id')
+                ->where('org_id', $service_center->vehicle_service_organization_id)
+                ->where('location_id', $service_center->vehicle_service_center_id)
+                ->first();
+        }
+        if(isset($location_organization)){
+            $service_organization = OrganizationUser::where('org_cat_id', $location_organization->org_cat_id)
+                ->where('loc_org_id', $location_organization->loc_org_id)
+                ->first();
+
+            if(isset($service_organization)){
+                $organization['id'] = $location_organization->org_id;
+                $organization['location_id'] = $location_organization->loc_id;
+                $action_url = '#';
+                $service_organization->notify(new VehicleVerification($vehicle, Auth::guard('web')->user(), $organization, $action_url));
+            }
+        }
+    }
+
+    public function markAllAsRead()
+    {
+        if(Auth::guard('web')->check()){
+            return redirect()->back()->with('error', 'You are not authorized to perform this action.');
+        }
+        if(Auth::guard('organization_user')->check()){
+            Auth::guard('organization_user')->user()->unreadNotifications->markAsRead();
+            return redirect()->back()->with('success', 'All Notifications Marked As Read.');
+        }
+    }
+        
+    public function markAsRead($id)
+    {
+        if(Auth::guard('web')->check()){
+            return redirect()->back()->with('error', 'You are not authorized to perform this action.');
+        }
+        if(Auth::guard('organization_user')->check()){
+            $notification = Auth::guard('organization_user')->user()->notifications()->where('id', $id)->first();
+            if(isset($notification)){
+                $notification->markAsRead();
+                return redirect()->back()->with('success', 'Notification Marked As Read.');
+            } else {
+                return redirect()->back()->with('error', 'Notification Not Found.');
+            }
+        }
+    }
+
+    public function verifyVehicleRegistrationDetails($id)
+    {
+        if(Auth::guard('web')->check()){
+            return redirect()->back()->with('error', 'You are not authorized to perform this action.');
+        }
+
+        if(Auth::guard('organization_user')->check()){
+            $notification = Auth::guard('organization_user')->user()->notifications()->where('id', $id)->first();
+            if(isset($notification)){
+                $notification->markAsRead();
+
+                // find other same notifications for the vehicle and the organization user
+                $otherNotifications = Auth::guard('organization_user')->user()->notifications()
+                    ->where('data->vehicle_id', $notification->data['vehicle_id'])
+                    ->where('data->vehicle_registration_number', $notification->data['vehicle_registration_number'])
+                    ->where('data->requested_by_id', $notification->data['requested_by_id'])
+                    ->where('data->organization_id', $notification->data['organization_id'])
+                    ->where('data->location_id', $notification->data['location_id'])
+                    ->whereNull('read_at')
+                    ->get();
+
+                $otherNotifications->markAsRead();
+
+                // get the vehicle details from the notification
+                $vehicle['id'] = $notification->data['vehicle_id'];
+                $vehicle['vehicle_registration_number'] = $notification->data['vehicle_registration_number'];
+
+                $vehicleVerificationHistory = VehicleVerificationHistory::where('vehicle_id', $vehicle['id'])
+                    ->where('vehicle_registration_number', $vehicle['vehicle_registration_number'])
+                    ->first();
+
+                if(isset($vehicleVerificationHistory)){
+                    $organization = Auth()->guard('organization_user')->user();
+                    
+                    // update vehicle verification history
+                    if($organization->isDivisionalSecretariat()){
+                        $vehicleVerificationHistory->update([
+                            'ds_verification' => 1,
+                            'ds_verification_date' => Carbon::now(),
+                        ]);
+                    } elseif($organization->isEmissionTestCenter()){
+                        $vehicleVerificationHistory->update([
+                            'emission_verification' => 1,
+                            'emission_verification_date' => Carbon::now(),
+                        ]);
+                    } elseif($organization->isInsuranceCompany()){
+                        $vehicleVerificationHistory->update([
+                            'insurance_verification' => 1,
+                            'insurance_verification_date' => Carbon::now(),
+                        ]);
+                    } elseif($organization->isServiceCenter()){
+                        $vehicleVerificationHistory->update([
+                            'service_verification' => 1,
+                            'service_verification_date' => Carbon::now(),
+                        ]);
+                    }
+
+                    // update vehicle verification score
+                    $vehicle = Vehicle::where('id', $vehicle['id'])
+                        ->where('registration_number', $vehicle['vehicle_registration_number'])
+                        ->first();
+                    
+                    
+                    if(isset($vehicle)){
+                        $vehicle->update([
+                            'verification_score' => $vehicle->verification_score + 1,
+                        ]);
+                    }
+                    return redirect()->route('dashboard')->with('success', 'Vehicle Registration Details Verified Successfully.');
+                }
+            } else {
+                return redirect()->route('dashboard')->with('error', 'Notification Not Found.');
+            }
+        }
     }
 }

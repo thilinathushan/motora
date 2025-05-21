@@ -156,7 +156,9 @@ class DashboardController extends Controller
                 return redirect()->route('dashboard')->with('error', 'Add Organization Details First.');
             }
             $vehicle_details_add = true;
-            return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add'));
+            $verifyVehicle = true;
+            $notification_id = null;
+            return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add', 'verifyVehicle', 'notification_id'));
         }else{
             return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
         }
@@ -172,8 +174,10 @@ class DashboardController extends Controller
                 $vehicle_details_add = false;
                 $vehicle_details = Vehicle::findOrFail($id);
             }
+            $verifyVehicle = true;
+            $notification_id = null;
 
-            return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add', 'vehicle_details'));
+            return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add', 'vehicle_details', 'verifyVehicle', 'notification_id'));
         } else {
             return redirect()->route('dashboard')->with('error', 'You are not authorized to view this page.');
         }
@@ -281,8 +285,15 @@ class DashboardController extends Controller
     public function manageVehicleLicenses()
     {
         if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDivisionalSecretariat()) {
+            $organization_user = Auth::guard('organization_user')->user();
+            $loc_id = OrganizationUser::join('location_organizations AS lo', 'organization_users.loc_org_id', 'lo.id')
+                ->join('locations AS loc', 'lo.location_id', 'loc.id')
+                ->where('organization_users.id', $organization_user->id)->value('loc.id');
+
             $vehicleLicenses = VehicleRevenueLicense::join('vehicles', 'vehicle_revenue_licenses.vehicle_id', 'vehicles.id')
-                ->select('vehicle_revenue_licenses.*', 'vehicles.registration_number', 'vehicles.current_owner_address_idNo', 'vehicles.unladen', 'vehicles.seating_capacity', 'vehicles.class_of_vehicle', 'vehicles.fuel_type')
+                ->join('locations AS l', 'vehicle_revenue_licenses.ds_center_id', 'l.id')
+                ->select('vehicle_revenue_licenses.*', 'vehicles.registration_number', 'vehicles.current_owner_address_idNo', 'vehicles.unladen', 'vehicles.seating_capacity', 'vehicles.class_of_vehicle', 'vehicles.fuel_type', 'l.name AS loc_name')
+                ->where('vehicle_revenue_licenses.ds_center_id', $loc_id)
                 ->get();
             return view('pages.organization.dashboard.vehicle_details.manage_vehicle_licenses', compact('vehicleLicenses'));
         } else {
@@ -550,5 +561,30 @@ class DashboardController extends Controller
         }
     }
 
+    public function verifyVehicle($id)
+    {
+        $vehicle_details_add = false;
+        $verifyVehicle = true;
+        $notification_id = $id;
 
+
+        // find the vehicle from the notification and send the details to display in the view
+        if(Auth::guard('web')->check()){
+            return redirect()->back()->with('error', 'You are not authorized to perform this action.');
+        }
+
+        if(Auth::guard('organization_user')->check()){
+            $notification = Auth::guard('organization_user')->user()->notifications()->where('id', $id)->first();
+            if(isset($notification)){
+                $vehicle_details = Vehicle::where('id', $notification->data['vehicle_id'])
+                    ->where('registration_number', $notification->data['vehicle_registration_number'])
+                    ->first();
+
+                return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add', 'verifyVehicle', 'vehicle_details', 'notification_id'));
+            } else {
+                return redirect()->back()->with('error', 'Notification not found.');
+            }
+        }
+        return redirect()->back()->with('error', 'You are not authorized to perform this action.');
+    }
 }
