@@ -6,7 +6,7 @@
                     <i class="fi fi-rr-menu-burger"></i></a>
             </div>
             <div class="nk-header-brand d-xl-none">
-                <a href="html/index.html" class="logo-link">
+                <a href="{{ route('dashboard') }}" class="logo-link">
                     <img class="logo-light logo-img" src="{{ asset('motora-logo-2.png') }}" srcset=""
                         alt="logo" />
                     <img class="logo-dark logo-img" src="{{ asset('motora-logo-2.png') }}" srcset=""
@@ -92,10 +92,12 @@
                             <div class="dropdown-inner">
                                 <ul class="link-list">
                                     <li>
-                                        <a href="html/user-profile-regular.html"><em
-                                                class="icon ni ni-user-alt"></em><span>View Profile</span></a>
+                                        <a href="{{ route('dashboard.viewProfile') }}">
+                                            <i class="fs-5 fi fi-rr-circle-user me-2"></i>
+                                            <span>View Profile</span>
+                                        </a>
                                     </li>
-                                    <li>
+                                    {{-- <li>
                                         <a href="html/user-profile-setting.html"><em
                                                 class="icon ni ni-setting-alt"></em><span>Account
                                                 Setting</span></a>
@@ -108,7 +110,7 @@
                                     <li>
                                         <a class="dark-switch" href="#"><em
                                                 class="icon ni ni-moon"></em><span>Dark Mode</span></a>
-                                    </li>
+                                    </li> --}}
                                 </ul>
                             </div>
                             <div class="dropdown-inner">

@@ -47,7 +47,8 @@ class Vehicle extends Model
         'provincial_council',
         'date_of_first_registration',
         'taxes_payable',
-        'verification_score'
+        'verification_score',
+        'certificate_url',
     ];
 
     public function users()

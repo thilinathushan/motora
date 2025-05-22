@@ -7,7 +7,7 @@
                 data-target="sidebarMenu"><i class="fi fi-rr-menu-burger"></i></a>
         </div>
         <div class="nk-sidebar-brand">
-            <a href="#" class="logo-link nk-sidebar-logo">
+            <a href="{{ route('dashboard') }}" class="logo-link nk-sidebar-logo">
                 <img class="logo-light logo-img" src="{{ asset('motora-logo-2.png') }}" srcset="" alt="logo" />
                 <img class="logo-dark logo-img" src="{{ asset('motora-logo-2.png') }}" srcset="" alt="logo-dark" />
             </a>

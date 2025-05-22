@@ -64,6 +64,8 @@ class VehicleController extends Controller
                 $vehicle->verification_score = 4;
                 $vehicle->save();
             }
+            session()->flash('success', 'Vehicle registered successfully.');
+            return redirect()->route('dashboard');
         }
         if(Auth::guard('web')->check())
         {
@@ -72,10 +74,50 @@ class VehicleController extends Controller
                 'user_id' => $user->id,
                 'vehicle_id' => $vehicle->id
             ]);
+
+            return redirect()->route('dashboard.addVehicleRegCertificate', $vehicle->id)->with('success', 'Vehicle registered successfully. Now you can add the vehicle registration certificate.');
         }
 
-        session()->flash('success', 'Vehicle registered successfully.');
-        return redirect()->route('dashboard');
+    }
+
+    public function storeVehicleRegCertificate(Request $request)
+    {
+        $validatedData = $request->validate([
+            'vehicle_reg_certificate' => 'required|file|mimes:pdf,jpg,jpeg,png|max:20480',
+            'vehicle_id' => 'required|exists:vehicles,id',
+        ]);
+
+        if(Auth::guard('web')->check()){
+            $vehicle = Vehicle::where('id', $validatedData['vehicle_id'])->first();
+            if(isset($vehicle)){
+                // get the cerificate file and store it in the storage
+                $file = $request->file('vehicle_reg_certificate');
+                $extension = $file->getClientOriginalExtension();
+
+                // create the directory structure based on vehicle details
+                $directory = strtolower($vehicle->provincial_council.'/'.$vehicle->year_of_manufacture.'/'.$vehicle->make.'/'.$vehicle->class_of_vehicle.'/'.$vehicle->fuel_type);
+
+                // Rename the file using vehicle registration number
+                $filename = str_replace([' ', '-'], '_', $vehicle->registration_number) . '_certificate.' . $extension;
+                $directory = str_replace([' ', '-'], '_', $directory);
+                
+                // Store the file in the public folder with the categorized structure
+                $path = $file->storeAs('vehicle_certificates/' . $directory, $filename);
+
+                // Convert storage path to public URL
+                $publicPath = 'storage/vehicle_certificates/' . $directory . '/' . $filename;
+
+                // Update the vehicle record with the certificate path
+                $vehicle->update([
+                    'certificate_url' => $publicPath
+                ]);
+                return redirect()->route('dashboard.manageVehicleDetails')->with('success', 'Vehicle Registration Certificate Uploaded Successfully.');
+            } else {
+                return redirect()->back()->with('error', 'Vehicle not found.');
+            }
+        } else {
+            return redirect()->back()->with('error', 'You are not authorized to perform this action.');
+        }
     }
 
     public function updateVehicleDetails(Request $request, $id)
@@ -500,7 +542,7 @@ class VehicleController extends Controller
 
                         if($vehicleVerificationHistory->ds_organization_id == null || $vehicleVerificationHistory->ds_center_id == null){
                             $vehicleVerificationHistory->update([
-                                'ds_organization_id' => $ds_center->ds_organization_id,                                
+                                'ds_organization_id' => $ds_center->ds_organization_id,
                                 'ds_center_id' => $ds_center->ds_center_id
                             ]);
                         }
@@ -514,7 +556,7 @@ class VehicleController extends Controller
 
                         if($vehicleVerificationHistory->emission_organization_id == null || $vehicleVerificationHistory->emission_center_id == null){
                             $vehicleVerificationHistory->update([
-                                'emission_organization_id' => $emission_center->emission_test_organization_id,                                
+                                'emission_organization_id' => $emission_center->emission_test_organization_id,
                                 'emission_center_id' => $emission_center->emission_test_center_id
                             ]);
                         }
@@ -528,7 +570,7 @@ class VehicleController extends Controller
 
                         if($vehicleVerificationHistory->insurance_organization_id == null || $vehicleVerificationHistory->insurance_center_id == null){
                             $vehicleVerificationHistory->update([
-                                'insurance_organization_id' => $insurance_company->insurance_organization_id,                                
+                                'insurance_organization_id' => $insurance_company->insurance_organization_id,
                                 'insurance_center_id' => $insurance_company->insurance_center_id
                             ]);
                         }
@@ -542,7 +584,7 @@ class VehicleController extends Controller
 
                         if($vehicleVerificationHistory->service_organization_id == null || $vehicleVerificationHistory->service_center_id == null){
                             $vehicleVerificationHistory->update([
-                                'service_organization_id' => $service_center->vehicle_service_organization_id,                                
+                                'service_organization_id' => $service_center->vehicle_service_organization_id,
                                 'service_center_id' => $service_center->vehicle_service_center_id
                             ]);
                         }
@@ -702,7 +744,7 @@ class VehicleController extends Controller
             return redirect()->back()->with('success', 'All Notifications Marked As Read.');
         }
     }
-        
+
     public function markAsRead($id)
     {
         if(Auth::guard('web')->check()){
@@ -752,7 +794,7 @@ class VehicleController extends Controller
 
                 if(isset($vehicleVerificationHistory)){
                     $organization = Auth()->guard('organization_user')->user();
-                    
+
                     // update vehicle verification history
                     if($organization->isDivisionalSecretariat()){
                         $vehicleVerificationHistory->update([
@@ -780,8 +822,8 @@ class VehicleController extends Controller
                     $vehicle = Vehicle::where('id', $vehicle['id'])
                         ->where('registration_number', $vehicle['vehicle_registration_number'])
                         ->first();
-                    
-                    
+
+
                     if(isset($vehicle)){
                         $vehicle->update([
                             'verification_score' => $vehicle->verification_score + 1,

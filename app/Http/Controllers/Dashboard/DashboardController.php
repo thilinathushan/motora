@@ -164,6 +164,11 @@ class DashboardController extends Controller
         }
     }
 
+    public function addVehicleRegCertificate($vehicle_id)
+    {
+        return view('pages.organization.dashboard.vehicle_details.add_vehicle_reg_certificate', compact('vehicle_id'));
+    }
+
     // Display Edit Vehicle Details
     public function editVehicleDetails($id)
     {
@@ -586,5 +591,16 @@ class DashboardController extends Controller
             }
         }
         return redirect()->back()->with('error', 'You are not authorized to perform this action.');
+    }
+
+    public function viewProfile()
+    {
+        if(Auth::guard('web')->check()){
+            $user = Auth::guard('web')->user();
+        }
+        if(Auth::guard('organization_user')->check()){
+            $user = Auth::guard('organization_user')->user();
+        }
+        return view('pages.users.dashboard.view_profile', compact('user'));
     }
 }

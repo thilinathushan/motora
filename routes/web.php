@@ -70,6 +70,8 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/vehicle_details/findVehicleOwnership', 'findVehicleOwnership')->name('dashboard.findVehicleOwnership');
     Route::get('/dashboard/vehicle_details/viewVehicleOwnership', 'viewVehicleOwnership')->name('dashboard.viewVehicleOwnership');
     Route::get('/dashboard/vehicle/verifyVehicle/{id}', 'verifyVehicle')->name('dashboard.vehicle.verifyVehicle');
+    Route::get('/dashboard/viewProfile', 'viewProfile')->name('dashboard.viewProfile');
+    Route::get('/dashboard/vehicle_details/add_vehicle_reg_certificate/{id}', 'addVehicleRegCertificate')->name('dashboard.addVehicleRegCertificate');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(DashboardOrganizationController::class)->group(function () {
@@ -98,6 +100,7 @@ Route::controller(VehicleController::class)->group(function () {
     Route::get('/dashboard/vehicle/markAllAsRead', 'markAllAsRead')->name('dashboard.vehicle.markAllAsRead');
     Route::get('/dashboard/vehicle/markAsRead/{id}', 'markAsRead')->name('dashboard.vehicle.markAsRead');
     Route::post('/dashboard/vehicle/verifyVehicleRegistrationDetails/{id}', 'verifyVehicleRegistrationDetails')->name('dashboard.vehicle.verifyVehicleRegistrationDetails');
+    Route::post('/dashboard/vehicle/storeVehicleRegCertificate', 'storeVehicleRegCertificate')->name('dashboard.vehicle.storeVehicleRegCertificate');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(VehicleServiceController::class)->group(function () {
