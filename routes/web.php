@@ -74,6 +74,7 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/vehicle_details/add_vehicle_reg_certificate/{id}', 'addVehicleRegCertificate')->name('dashboard.addVehicleRegCertificate');
     Route::post('/dashboard/report/faults_prediction_report', 'faultsPredictionReport')->name('dashboard.faultsPredictionReport');
     Route::get('/dashboard/report/faults_prediction_view', 'faultsPredictionView')->name('dashboard.faultsPredictionView');
+    Route::post('/dashboard/report/downloadMotoraReport', 'downloadMotoraReport')->name('dashboard.vehicle.downloadMotoraReport');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(DashboardOrganizationController::class)->group(function () {

@@ -20,6 +20,7 @@ use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\PDF;
 
 class DashboardController extends Controller
 {
@@ -704,9 +705,21 @@ class DashboardController extends Controller
 
         // get the ML Result
         $mlResult = $this->getResultFromMLModel($record);
-        
-        // get the AI Prediction
-        $aiData = $this->getPredictionFromAI($mlResult);
+        if(isset($mlResult) && $mlResult != null){
+            try {
+                // get the AI Prediction
+                $aiData = $this->getPredictionFromAI($mlResult);
+                
+                if(!isset($aiData) || empty($aiData)){
+                    $aiData['explanation'] = 'No Predictions Available';
+                }
+            } catch (\Exception $e) {
+                // Set error message in aiData
+                $aiData['explanation'] = 'Error connecting to prediction service.';
+            }
+        } else {
+            $aiData['explanation'] = 'No Predictions Available';
+        }
         
         return view('pages.organization.dashboard.vehicle_details.view_faults_predection_report', compact('vehicle', 'vehicleEmissions', 'aiData', 'reportDate', 'totalRegCount'));
     }
@@ -741,8 +754,8 @@ class DashboardController extends Controller
             // Handle any exceptions or errors
             return response()->json([
                 'error' => 'Failed to get response from ML model',
-                'message' => $th->getMessage()
-            ],500); 
+                // 'message' => $th->getMessage()
+            ]); 
         }
     }
 
@@ -776,8 +789,38 @@ class DashboardController extends Controller
             // Handle any exceptions or errors
             return response()->json([
                 'error' => 'Failed to get response from ML model',
-                'message' => $th->getMessage()
-            ],500); 
+                // 'message' => $th->getMessage()
+            ]); 
         }
+    }
+
+    public function downloadMotoraReport(Request $request)
+    {
+        $response = $request->all();
+
+        $vehicle = json_decode($response['vehicle_details']);
+        $vehicleEmissions = json_decode($response['vehicleEmissions']);
+        $aiData = json_decode($response['aiData']);
+        $reportDate = $response['reportDate'];
+        $totalRegCount = $response['totalRegCount'];
+
+        // Generate a filename based on the vehicle registration number
+        $filename = 'Motora Vehicle Report - ' . $vehicle->registration_number . '.pdf';
+
+        /// Generate the PDF
+        $pdf = PDF::loadView('pages.organization.dashboard.vehicle_details.motora_report', 
+            compact('vehicle', 'vehicleEmissions', 'aiData', 'reportDate', 'totalRegCount'));
+        
+        // Customize PDF settings if needed
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->setOptions([
+            'defaultFont' => 'sans-serif',
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'isJavascriptEnabled' => true,
+        ]);
+        
+        // Return the PDF as a download
+        return $pdf->download($filename);
     }
 }
