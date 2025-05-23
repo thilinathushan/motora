@@ -147,17 +147,34 @@
                         </x-dashboard.nav-item>
                     @endif
 
-                    <x-dashboard.nav-item href="#"
-                        :active="false"
-                        menuHeading="User"
-                        :isNew="true"
-                        >
-                        <x-slot:icon>
-                            <i class="fi fi-rr-circle-user"></i>
-                        </x-slot:icon>
-                        User Details
-                    </x-dashboard.nav-item>
+                    @if (Auth::guard('organization_user')->check() || Auth::guard('web')->check())
+                        <x-dashboard.nav-item href="#"
+                            :active="false"
+                            menuHeading="Report"
+                            :hasSub="true"
+                            >
+                            <x-slot:icon>
+                                <i class="fi fi-rr-sparkles"></i>
+                            </x-slot:icon>
+                            Vehicle Report
+                            <x-slot:singleNavItem>
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.faultsPredictionView') }}">Faults Prediction Report</x-dashboard.single-nav-item>
+                            </x-slot:singleNavItem>
+                        </x-dashboard.nav-item>
+                    @endif
 
+                    @if (!Auth::guard('web')->check())
+                        <x-dashboard.nav-item href="#"
+                            :active="false"
+                            menuHeading="User"
+                            :isNew="true"
+                            >
+                            <x-slot:icon>
+                                <i class="fi fi-rr-circle-user"></i>
+                            </x-slot:icon>
+                            User Details
+                        </x-dashboard.nav-item>
+                    @endif
                 </ul>
             </div>
         </div>

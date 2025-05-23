@@ -72,6 +72,8 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/vehicle/verifyVehicle/{id}', 'verifyVehicle')->name('dashboard.vehicle.verifyVehicle');
     Route::get('/dashboard/viewProfile', 'viewProfile')->name('dashboard.viewProfile');
     Route::get('/dashboard/vehicle_details/add_vehicle_reg_certificate/{id}', 'addVehicleRegCertificate')->name('dashboard.addVehicleRegCertificate');
+    Route::post('/dashboard/report/faults_prediction_report', 'faultsPredictionReport')->name('dashboard.faultsPredictionReport');
+    Route::get('/dashboard/report/faults_prediction_view', 'faultsPredictionView')->name('dashboard.faultsPredictionView');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(DashboardOrganizationController::class)->group(function () {
@@ -101,6 +103,7 @@ Route::controller(VehicleController::class)->group(function () {
     Route::get('/dashboard/vehicle/markAsRead/{id}', 'markAsRead')->name('dashboard.vehicle.markAsRead');
     Route::post('/dashboard/vehicle/verifyVehicleRegistrationDetails/{id}', 'verifyVehicleRegistrationDetails')->name('dashboard.vehicle.verifyVehicleRegistrationDetails');
     Route::post('/dashboard/vehicle/storeVehicleRegCertificate', 'storeVehicleRegCertificate')->name('dashboard.vehicle.storeVehicleRegCertificate');
+    Route::post('/dashboard/vehicle/findVehicleForPrediction', 'findVehicleForPrediction')->name('dashboard.vehicle.findVehicleForPrediction');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(VehicleServiceController::class)->group(function () {

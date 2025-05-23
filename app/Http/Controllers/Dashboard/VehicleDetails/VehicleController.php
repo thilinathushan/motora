@@ -100,7 +100,7 @@ class VehicleController extends Controller
                 // Rename the file using vehicle registration number
                 $filename = str_replace([' ', '-'], '_', $vehicle->registration_number) . '_certificate.' . $extension;
                 $directory = str_replace([' ', '-'], '_', $directory);
-                
+
                 // Store the file in the public folder with the categorized structure
                 $path = $file->storeAs('vehicle_certificates/' . $directory, $filename);
 
@@ -497,12 +497,18 @@ class VehicleController extends Controller
             return redirect()->back()->with('error', 'You are not authorized to perform this action.');
         }
 
-        $vehicle = Vehicle::select(['id', 'registration_number', 'chassis_number', 'engine_no', 'verification_score'])
+
+        $vehicle = Vehicle::select(['id', 'registration_number', 'chassis_number', 'engine_no', 'verification_score', 'certificate_url'])
             ->where('id', $validated['vehicle_id'])
             ->where('registration_number', $validated['vehicle_registration_number'])
             ->where('chassis_number', $validated['vehicle_chassis_number'])
             ->where('engine_no', $validated['vehicle_engine_number'])
             ->first();
+
+        // if vehicle book is not added redirect to add vehicle book page
+        if(isset($vehicle) && $vehicle->certificate_url == null){
+            return redirect()->route('dashboard.addVehicleRegCertificate', $vehicle->id)->with('error', 'Please Add Vehicle Registration Certificate Before Verification.');
+        }
 
         if (isset($vehicle) && $vehicle->verification_score < 4) {
             // find nearest divisional secretariat using latest vehicle revenue license details
@@ -835,5 +841,34 @@ class VehicleController extends Controller
                 return redirect()->route('dashboard')->with('error', 'Notification Not Found.');
             }
         }
+
+    }
+
+    public function findVehicleForPrediction(Request $request)
+    {
+        $validated = $request->validate([
+            'registration_number' => 'required|max:255',
+            'chassis_number' => 'required|string|max:255',
+            'engine_no' => 'required|string|max:255',
+        ]);
+        $vehicle = Vehicle::where('registration_number', $validated['registration_number'])
+            ->where('chassis_number', $validated['chassis_number'])
+            ->where('engine_no', $validated['engine_no'])
+            ->first();
+        if(isset($vehicle)){
+            $result = [
+                'status' => 'success',
+                'vehicle_id' => $vehicle->id,
+                'registration_number' => $vehicle->registration_number,
+                'chassis_number' => $vehicle->chassis_number,
+                'engine_no' => $vehicle->engine_no,
+            ];
+        }else{
+            $result = [
+                'status' => 'error',
+                'message' => 'Vehicle not found.',
+            ];
+        }
+        return view('pages.organization.dashboard.vehicle_details.view_faults_prediction_details', compact('result'));
     }
 }

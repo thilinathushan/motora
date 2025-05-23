@@ -16,6 +16,7 @@ use App\Models\VehicleInsurance;
 use App\Models\VehicleRevenueLicense;
 use App\Models\VehicleService;
 use Carbon\Carbon;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -602,5 +603,181 @@ class DashboardController extends Controller
             $user = Auth::guard('organization_user')->user();
         }
         return view('pages.users.dashboard.view_profile', compact('user'));
+    }
+
+    public function faultsPredictionView()
+    {
+        $result = false;
+        return view('pages.organization.dashboard.vehicle_details.view_faults_prediction_details', compact('result'));
+    }
+
+    public function faultsPredictionReport(Request $request)
+    {
+        $validated = $request->validate([
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'registration_number' => 'required|max:255',
+            'chassis_number' => 'required|string|max:255',
+            'engine_no' => 'required|string|max:255',
+        ]);
+        $vehicle = Vehicle::select([
+                'id',
+                'make',
+                'model',
+                'registration_number',
+                'colour',
+                'class_of_vehicle',
+                'year_of_manufacture',
+                'cylinder_capacity',
+                'fuel_type', 
+                'type_of_body',
+                'previous_owners',
+                'date_of_first_registration',
+                'length_width_height',
+                'wheel_base',
+                'unladen',
+                'seating_capacity',
+                'provincial_council',
+            ])
+            ->where('registration_number', $validated['registration_number'])
+            ->where('chassis_number', $validated['chassis_number'])
+            ->where('engine_no', $validated['engine_no'])
+            ->first();
+        
+        if(!$vehicle){
+            return redirect()->back()->with('error', 'Vehicle not found.');
+        }
+        $vehicleEmissions = VehicleEmission::select([
+                'id',
+                'vehicle_id',
+                'odometer',
+                'created_at',
+                'overall_status'
+            ])
+            ->where('vehicle_id', $validated['vehicle_id'])
+            ->where('vehicle_registration_number', $validated['registration_number'])
+            ->orderBy('created_at', 'asc')
+            ->get();
+        
+        if(!isset($vehicleEmissions)){
+            return redirect()->back()->with('error', 'Vehicle emissions not found.');
+        }
+
+        $vehicleServiceRecord = VehicleService::where('vehicle_id', $validated['vehicle_id'])
+            ->where('vehicle_registration_number', $validated['registration_number'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+        
+        if(!isset($vehicleServiceRecord)){
+            return redirect()->back()->with('error', 'Vehicle service record not found.');
+        }
+        
+        // report Date
+        $reportDate = Carbon::now()->format('Y-m-d');
+
+        $previous_owners = json_decode($vehicle->previous_owners);
+        $totalRegCount = is_array($previous_owners) ? count($previous_owners) + 1 : 0 + 1;
+
+        $record = [
+            "vehicle_class"=> $vehicle->class_of_vehicle,
+            "make"=> $vehicle->make,
+            "model"=> $vehicle->model,
+            "fuel_type"=> $vehicle->fuel_type,
+            "type_of_body"=> $vehicle->type_of_body,
+            "is_engine_oil_change"=> $vehicleServiceRecord->is_engine_oil_change,
+            "is_engine_oil_filter_change"=> $vehicleServiceRecord->is_engine_oil_filter_change,
+            "is_brake_oil_change"=> $vehicleServiceRecord->is_brake_oil_change,
+            "is_brake_pad_change"=> $vehicleServiceRecord->is_brake_pad_change,
+            "is_transmission_oil_change"=> $vehicleServiceRecord->is_transmission_oil_change,
+            "is_deferential_oil_change"=> $vehicleServiceRecord->is_deferential_oil_change,
+            "is_headlights_okay"=> $vehicleServiceRecord->is_headlights_okay,
+            "is_signal_light_okay"=> $vehicleServiceRecord->is_signal_light_okay,
+            "is_brake_lights_okay"=> $vehicleServiceRecord->is_brake_lights_okay,
+            "is_air_filter_change"=> $vehicleServiceRecord->is_air_filter_change,
+            "is_radiator_oil_chane"=> $vehicleServiceRecord->is_radiator_oil_change,
+            "is_ac_filter_change"=> $vehicleServiceRecord->is_ac_filter_change,
+            "is_tyre_air_pressure_ok"=> $vehicleServiceRecord->is_tyre_air_pressure_ok,
+            "year_of_manufacture"=> $vehicle->year_of_manufacture,
+            "ac_gas_level"=> $vehicleServiceRecord->ac_gas_level,
+            "engine_capacity"=> $vehicle->cylinder_capacity,
+            "emission_test_status"=> $vehicleEmissions->last()->overall_status
+        ];
+
+        // get the ML Result
+        $mlResult = $this->getResultFromMLModel($record);
+        
+        // get the AI Prediction
+        $aiData = $this->getPredictionFromAI($mlResult);
+        
+        return view('pages.organization.dashboard.vehicle_details.view_faults_predection_report', compact('vehicle', 'vehicleEmissions', 'aiData', 'reportDate', 'totalRegCount'));
+    }
+
+    public function getResultFromMLModel($record)
+    {
+        // Define tthe ML Model Endpoint
+        $mlEndPoint = 'https://motora-ai-ml-app.yellowtree-add59892.southindia.azurecontainerapps.io/predict';
+
+        // Initialize Guzzle HTTP Client
+        $client = new Client();
+
+        try {
+            // Make the POST request to the ML model endpoint
+            $response = $client->post($mlEndPoint, [
+                'json' => $record,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+            ]);
+
+            // Get the response body
+            $responseBody = $response->getBody()->getContents();
+
+            // Decode the JSON response
+            $responseData = json_decode($responseBody, true);
+
+            // Return the response data
+            return $responseData;
+        } catch (\Throwable $th) {
+            // Handle any exceptions or errors
+            return response()->json([
+                'error' => 'Failed to get response from ML model',
+                'message' => $th->getMessage()
+            ],500); 
+        }
+    }
+
+    public function getPredictionFromAI($mlResult)
+    {
+        // Define the AI endpoint
+        $aiEndpoint = 'https://motora-ai-ml-app.yellowtree-add59892.southindia.azurecontainerapps.io/output';
+
+        // Initialize Guzzle HTTP Client
+        $client = new Client();
+
+        try {
+            // Make the POST request to the AI endpoint
+            $response = $client->post($aiEndpoint, [
+                'json' => $mlResult,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+            ]);
+
+            // Get the response body
+            $responseBody = $response->getBody()->getContents();
+
+            // Decode the JSON response
+            $responseData = json_decode($responseBody, true);
+
+            // Return the response data
+            return $responseData;
+        } catch (\Throwable $th) {
+            // Handle any exceptions or errors
+            return response()->json([
+                'error' => 'Failed to get response from ML model',
+                'message' => $th->getMessage()
+            ],500); 
+        }
     }
 }
