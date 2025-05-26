@@ -7,6 +7,7 @@
     <meta name="description"
         content="Uncover the complete story behind any vehicle with a reliable report designed to provide clarity, prevent unexpected issues, and empower confident buying and selling decisions.">
     <meta name="author" content="Motora">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>
         @if (isset($title))
@@ -84,6 +85,9 @@
     </div>
 
     @livewireScripts
+    <!-- Include the Livewire modal component -->
+    @livewire('reauthentication-modal')
+
     <script src="{{ asset('assets/js/bundle.js') }}"></script>
     <script src="{{ asset('assets/js/scripts.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
@@ -97,6 +101,43 @@
                     alert.close();
                 }, 5000); // Time in milliseconds
             }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if modal should be shown on page load
+            @if (session('show_crypto_modal'))
+                Livewire.dispatch('show-crypto-modal');
+            @endif
+        });
+
+        // Listen for form resubmission after crypto verification
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('resubmit-form', (event) => {
+                const formData = event[0]; // Livewire passes data as array
+
+                if (formData && formData.action && formData.data) {
+                    // Create a temporary form and submit it
+                    const form = document.createElement('form');
+                    form.method = formData.method || 'POST';
+                    form.action = formData.action;
+                    form.style.display = 'none';
+
+                    // Add all the original form data as hidden inputs
+                    Object.keys(formData.data).forEach(key => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = formData.data[key];
+                        form.appendChild(input);
+                    });
+
+                    // Append to body and submit
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         });
     </script>
 

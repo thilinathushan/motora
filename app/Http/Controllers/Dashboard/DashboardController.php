@@ -158,7 +158,7 @@ class DashboardController extends Controller
                 return redirect()->route('dashboard')->with('error', 'Add Organization Details First.');
             }
             $vehicle_details_add = true;
-            $verifyVehicle = true;
+            $verifyVehicle = false;
             $notification_id = null;
             return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add', 'verifyVehicle', 'notification_id'));
         }else{
@@ -181,7 +181,7 @@ class DashboardController extends Controller
                 $vehicle_details_add = false;
                 $vehicle_details = Vehicle::findOrFail($id);
             }
-            $verifyVehicle = true;
+            $verifyVehicle = false;
             $notification_id = null;
 
             return view('pages.organization.dashboard.vehicle_details.add_vehicle', compact('vehicle_details_add', 'vehicle_details', 'verifyVehicle', 'notification_id'));
@@ -629,7 +629,7 @@ class DashboardController extends Controller
                 'class_of_vehicle',
                 'year_of_manufacture',
                 'cylinder_capacity',
-                'fuel_type', 
+                'fuel_type',
                 'type_of_body',
                 'previous_owners',
                 'date_of_first_registration',
@@ -643,7 +643,7 @@ class DashboardController extends Controller
             ->where('chassis_number', $validated['chassis_number'])
             ->where('engine_no', $validated['engine_no'])
             ->first();
-        
+
         if(!$vehicle){
             return redirect()->back()->with('error', 'Vehicle not found.');
         }
@@ -658,7 +658,7 @@ class DashboardController extends Controller
             ->where('vehicle_registration_number', $validated['registration_number'])
             ->orderBy('created_at', 'asc')
             ->get();
-        
+
         if(!isset($vehicleEmissions)){
             return redirect()->back()->with('error', 'Vehicle emissions not found.');
         }
@@ -667,11 +667,11 @@ class DashboardController extends Controller
             ->where('vehicle_registration_number', $validated['registration_number'])
             ->orderBy('created_at', 'desc')
             ->first();
-        
+
         if(!isset($vehicleServiceRecord)){
             return redirect()->back()->with('error', 'Vehicle service record not found.');
         }
-        
+
         // report Date
         $reportDate = Carbon::now()->format('Y-m-d');
 
@@ -709,7 +709,7 @@ class DashboardController extends Controller
             try {
                 // get the AI Prediction
                 $aiData = $this->getPredictionFromAI($mlResult);
-                
+
                 if(!isset($aiData) || empty($aiData)){
                     $aiData['explanation'] = 'No Predictions Available';
                 }
@@ -720,7 +720,7 @@ class DashboardController extends Controller
         } else {
             $aiData['explanation'] = 'No Predictions Available';
         }
-        
+
         return view('pages.organization.dashboard.vehicle_details.view_faults_predection_report', compact('vehicle', 'vehicleEmissions', 'aiData', 'reportDate', 'totalRegCount'));
     }
 
@@ -755,7 +755,7 @@ class DashboardController extends Controller
             return response()->json([
                 'error' => 'Failed to get response from ML model',
                 // 'message' => $th->getMessage()
-            ]); 
+            ]);
         }
     }
 
@@ -790,7 +790,7 @@ class DashboardController extends Controller
             return response()->json([
                 'error' => 'Failed to get response from ML model',
                 // 'message' => $th->getMessage()
-            ]); 
+            ]);
         }
     }
 
@@ -808,9 +808,9 @@ class DashboardController extends Controller
         $filename = 'Motora Vehicle Report - ' . $vehicle->registration_number . '.pdf';
 
         /// Generate the PDF
-        $pdf = PDF::loadView('pages.organization.dashboard.vehicle_details.motora_report', 
+        $pdf = PDF::loadView('pages.organization.dashboard.vehicle_details.motora_report',
             compact('vehicle', 'vehicleEmissions', 'aiData', 'reportDate', 'totalRegCount'));
-        
+
         // Customize PDF settings if needed
         $pdf->setPaper('a4', 'portrait');
         $pdf->setOptions([
@@ -819,7 +819,7 @@ class DashboardController extends Controller
             'isRemoteEnabled' => true,
             'isJavascriptEnabled' => true,
         ]);
-        
+
         // Return the PDF as a download
         return $pdf->download($filename);
     }

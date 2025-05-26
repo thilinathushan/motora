@@ -89,7 +89,7 @@ Route::controller(LocationController::class)->group(function () {
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(VehicleController::class)->group(function () {
-    Route::post('/dashboard/vehicle/store', 'storeVehicledetails')->name('dashboard.vehicle.store');
+    Route::post('/dashboard/vehicle/store', 'storeVehicledetails')->name('dashboard.vehicle.store')->middleware('crypto');
     Route::post('/dashboard/vehicle/update/{id}', 'updateVehicleDetails')->name('dashboard.vehicle.update');
     Route::post('/dashboard/vehicle/findUserVehicle', 'findUserVehicle')->name('dashboard.vehicle.findUserVehicle');
     Route::post('/dashboard/vehicle/assignVehicleToUser', 'assignVehicleToUser')->name('dashboard.vehicle.assignVehicleToUser');
