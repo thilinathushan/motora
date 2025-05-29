@@ -2,8 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LocationOrganization;
 use App\Models\OrganizationCategory;
 use App\Models\OrganizationUser;
+use App\Models\UserVehicle;
+use App\Models\Vehicle;
+use App\Models\VehicleEmission;
+use App\Models\VehicleInsurance;
+use App\Models\VehicleRevenueLicense;
+use App\Models\VehicleService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -97,9 +104,68 @@ class OrganizationController extends Controller
 
         // Disconnect wallet
         $walletController->disconnect();
-        
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/');
+    }
+
+    public function dashboard()
+    {
+        if(Auth::guard('organization_user')->check() || Auth::guard('web')->check()) {
+            if(Auth::guard('organization_user')->check()){
+                $user = Auth::guard('organization_user')->user();
+
+                // Find the main location then organization location count
+                if(isset($user->loc_org_id)){
+                    $org_details = LocationOrganization::select(['org_id', 'location_id'])->where('id', $user->loc_org_id)->first();
+                    
+                    // Find the location count
+                    $dashboardStat['locationCount'] = LocationOrganization::where('org_id', $org_details->org_id)->count();
+
+                    // Find the User Count of the organization
+                    $org_id = LocationOrganization::where('id', $user->loc_org_id)->value('org_id');
+                    $org_loc_ids = LocationOrganization::where('org_id', $org_id)->pluck('id')->toArray();
+                    $dashboardStat['userCount'] = OrganizationUser::whereIn('loc_org_id', $org_loc_ids)->count();
+
+                    if($user->isDepartmentOfMotorTraffic()){
+                        // Find the Vehicle count
+                        $dashboardStat['vehicleCount'] = Vehicle::count();
+                    }
+                    if($user->isDivisionalSecretariat()){
+                        // Find the Revenue Licences count
+                        $dashboardStat['revenueLicenceCount'] = VehicleRevenueLicense::where('ds_organization_id', $org_details->org_id)
+                            ->where('ds_center_id', $org_details->location_id)->count();
+                    }
+                    if($user->isEmissionTestCenter()){
+                        // Find the Emission Test count
+                        $dashboardStat['emissionTestCount'] = VehicleEmission::where('emission_test_organization_id', $org_details->org_id)
+                            ->where('emission_test_center_id', $org_details->location_id)->count();
+                    }
+                    if($user->isInsuranceCompany()){
+                        // Find the Insurance count
+                        $dashboardStat['insuranceCount'] = VehicleInsurance::where('insurance_organization_id', $org_details->org_id)
+                            ->where('insurance_center_id', $org_details->location_id)->count();
+                    }
+                    if($user->isServiceCenter()){
+                        // Find the Service count
+                        $dashboardStat['serviceCount'] = VehicleService::where('vehicle_service_organization_id', $org_details->org_id)
+                            ->where('vehicle_service_center_id', $org_details->location_id)->count();
+                    }
+                } else {
+                    $dashboardStat['locationCount'] = 0;
+                    $dashboardStat['userCount'] = 0;
+                }
+            }
+
+            if(Auth::guard('web')->check()){
+                $user = Auth::guard('web')->user();
+                $dashboardStat['vehicleCount'] = UserVehicle::where('user_id', $user->id)->count();
+            }
+
+            return view('pages.organization.dashboard.index', compact('dashboardStat'));
+        } else {
+            return redirect()->route('organization.login_view');
+        }
     }
 }

@@ -24,9 +24,7 @@ Route::get('/error_page', function(){
     return view('pages.error_page');
 })->name('error_page');
 
-Route::get('/dashboard', function(){
-    return view('pages.organization.dashboard.index');
-})->middleware(['auth:organization_user,web', 'verified'])->name('dashboard');
+Route::get('/dashboard', [OrganizationController::class, 'dashboard'])->middleware(['auth:organization_user,web', 'verified'])->name('dashboard');
 
 Route::controller(OrganizationController::class)->group(function () {
     Route::get('/organization/{org_id}/register', 'register')->name('organization.register');
