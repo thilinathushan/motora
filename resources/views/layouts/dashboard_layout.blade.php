@@ -34,6 +34,70 @@
         .icon-hover {
             color: #36393B;
         }
+
+        /* reauth styles */
+        .step-progress {
+            margin: 0 20px;
+        }
+        .step {
+            text-align: center;
+            flex: 1;
+        }
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-weight: bold;
+            border: 2px solid #e9ecef;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .step-circle i {
+            font-size: 18px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .step.active .step-circle {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .step.completed .step-circle {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .step-line {
+            height: 2px;
+            background-color: #e9ecef;
+            margin-top: 19px;
+            flex: 1;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+        .step-line.completed {
+            background-color: #28a745;
+        }
+        .step small {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+        .step.active small {
+            color: #007bff;
+            font-weight: 600;
+        }
+        .step.completed small {
+            color: #28a745;
+            font-weight: 600;
+        }
     </style>
 </head>
 {{-- f5f6fa --}}
@@ -114,6 +178,26 @@
 
         // Listen for form resubmission after crypto verification
         document.addEventListener('livewire:init', () => {
+            Livewire.on('schedule-delayed-resubmit', () => {
+                // console.log('Scheduling delayed resubmit...');
+
+                // Wait 1.5 seconds to show success message, then proceed
+                setTimeout(() => {
+                    // console.log('Proceeding with form resubmit and modal close...');
+
+                    // Close modal
+                    Livewire.dispatch('closeModal');
+
+                    // Trigger form resubmit
+                    Livewire.dispatch('resubmit-form', [{
+                        action: '{{ session('pending_form_action') }}',
+                        method: '{{ session('pending_form_method') }}',
+                        data: @json(session('pending_form_data'))
+                    }]);
+
+                }, 1500); // 1.5 second delay to show success message
+            });
+
             Livewire.on('resubmit-form', (event) => {
                 const formData = event[0]; // Livewire passes data as array
 

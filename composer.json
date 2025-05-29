@@ -9,9 +9,11 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "guzzlehttp/guzzle": "^7.9",
+        "kornrunner/keccak": "^1.1",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
+        "simplito/elliptic-php": "^1.0",
         "tanthammar/livewire-window-size": "^3.2"
     },
     "require-dev": {

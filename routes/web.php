@@ -10,6 +10,7 @@ use App\Http\Controllers\Dashboard\VehicleServiceController;
 use App\Http\Controllers\LandingPage\LandingController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -121,6 +122,9 @@ Route::controller(CommonController::class)->group(function () {
     Route::get('/get-province/{district_id}', 'getProvince')->name('common.getProvince');
 });
 
+Route::controller(WalletController::class)->group(function () {
+    Route::post('/wallet/connect', 'connect')->name('wallet.connect');
+})->middleware(['auth:organization_user,web', 'verified']);
 
 
 

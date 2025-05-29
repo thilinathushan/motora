@@ -19,6 +19,18 @@ class OrganizationUser extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'phone_number',
+        'wallet_address',
+        'wallet_connected_at',
+        'wallet_verified',
+        'last_wallet_verification'
+    ];
+
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'wallet_connected_at' => 'datetime',
+        'wallet_verified' => 'boolean',
+        'last_wallet_verification' => 'datetime',
     ];
 
     // implement the relation between OrganizationUser and UserType
@@ -50,4 +62,47 @@ class OrganizationUser extends Authenticatable implements MustVerifyEmail
     {
         return $this->org_cat_id == 9;
     }
+
+    // Add Wallet Related Methods
+    public function hasWalletConnected(): bool
+    {
+        return !empty($this->wallet_address);
+    }
+
+    public function isWalletVerified(): bool
+    {
+        return $this->wallet_verified && $this->hasWalletConnected();
+    }
+
+    public function connectWallet(string $walletAddress): void
+    {
+        $this->update([
+            'wallet_address' => strtolower($walletAddress), // Store in lowercase for consistency
+            'wallet_connected_at' => now(),
+            'wallet_verified' => false, // Reset verification when connecting new wallet
+        ]);
+    }
+
+    public function verifyWallet(): void
+    {
+        $this->update([
+            'wallet_verified' => true,
+        ]);
+    }
+
+    public function disconnectWallet(): void
+    {
+        $this->update([
+            'wallet_address' => null,
+            'wallet_connected_at' => null,
+            'wallet_verified' => false,
+            'last_wallet_verification' => null,
+        ]);
+    }
+
+    public function requiresWalletVerification(): bool
+    {
+        return $this->isDepartmentOfMotorTraffic() && $this->hasWalletConnected();
+    }
+
 }

@@ -91,9 +91,13 @@ class OrganizationController extends Controller
         ]);
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request, WalletController $walletController)
     {
         Auth::guard('organization_user')->logout();
+
+        // Disconnect wallet
+        $walletController->disconnect();
+        
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/');
