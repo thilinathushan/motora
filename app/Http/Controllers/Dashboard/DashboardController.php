@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\PDF;
+use Illuminate\Support\Facades\Config;
 
 class DashboardController extends Controller
 {
@@ -705,20 +706,26 @@ class DashboardController extends Controller
 
         // get the ML Result
         $mlResult = $this->getResultFromMLModel($record);
-        if(isset($mlResult) && $mlResult != null){
-            try {
-                // get the AI Prediction
-                $aiData = $this->getPredictionFromAI($mlResult);
+        $aiData = [];
 
-                if(!isset($aiData) || empty($aiData)){
+        if(is_array($mlResult)){
+            try {
+                $aiResult = $this->getPredictionFromAI($mlResult);
+
+                if (!is_array($aiResult)) {
                     $aiData['explanation'] = 'No Predictions Available';
+                }else{
+                    $aiData = $aiResult;
                 }
             } catch (\Exception $e) {
-                // Set error message in aiData
                 $aiData['explanation'] = 'Error connecting to prediction service.';
             }
         } else {
-            $aiData['explanation'] = 'No Predictions Available';
+            $mlData = $mlResult->getData(true);
+            if (isset($mlData['error'])) {
+                // ML response contains an error
+                $aiData['explanation'] = 'No Predictions Available - Prediction Model Issue.';
+            }
         }
 
         return view('pages.organization.dashboard.vehicle_details.view_faults_predection_report', compact('vehicle', 'vehicleEmissions', 'aiData', 'reportDate', 'totalRegCount'));
@@ -726,8 +733,12 @@ class DashboardController extends Controller
 
     public function getResultFromMLModel($record)
     {
+        // Get the current model version
+        $selectedModelVersion = session('user_selected_model', Config::get('prediction_model.default'));
+        $model = Config::get('prediction_model.models')[$selectedModelVersion];
+
         // Define tthe ML Model Endpoint
-        $mlEndPoint = 'https://motora-ai-ml-app.yellowtree-add59892.southindia.azurecontainerapps.io/predict';
+        $mlEndPoint = $model['mlModel'];
 
         // Initialize Guzzle HTTP Client
         $client = new Client();
@@ -761,8 +772,12 @@ class DashboardController extends Controller
 
     public function getPredictionFromAI($mlResult)
     {
+        // Get the current model version
+        $selectedModelVersion = session('user_selected_model', Config::get('prediction_model.default'));
+        $model = Config::get('prediction_model.models')[$selectedModelVersion];
+
         // Define the AI endpoint
-        $aiEndpoint = 'https://motora-ai-ml-app.yellowtree-add59892.southindia.azurecontainerapps.io/output';
+        $aiEndpoint = $model['aiModel'];
 
         // Initialize Guzzle HTTP Client
         $client = new Client();

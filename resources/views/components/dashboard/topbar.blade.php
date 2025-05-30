@@ -32,8 +32,23 @@
                 </div>
             </div> --}}
             <!-- .nk-header-news -->
+            @php
+                $selectedModelVersion = session('user_selected_model', Config::get('prediction_model.default'));
+                $modelDetails = Config::get('prediction_model.models');
+            @endphp
             <div class="nk-header-tools">
                 <ul class="nk-quick-nav">
+                    {{-- model selection --}}
+                    <div class="col m-0 p-0 d-flex flex-column justify-content-start align-items-start">
+                        <p class="p-0 m-0 text-muted" style="font-size: 12px">Motora Prediction</p>
+                        <select id="modelSelector" name="model_version" class="form-select border-0 badge rounded-pill text-secondary text-start" style="background-color: rgb(195, 195, 195)" aria-label="Default select example">
+                            @foreach ($modelDetails as $version => $model)
+                                <option @if ($version == $selectedModelVersion) selected @endif
+                                    value="{{ $version }}">{{ $model['modelName'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <li class="dropdown user-dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             <div class="user-toggle">

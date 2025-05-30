@@ -118,6 +118,7 @@ Route::controller(VehicleInsuranceController::class)->group(function () {
 
 Route::controller(CommonController::class)->group(function () {
     Route::get('/get-province/{district_id}', 'getProvince')->name('common.getProvince');
+    Route::post('/getSelectedModel', 'getSelectedModel')->name('common.getSelectedModel');
 });
 
 Route::controller(WalletController::class)->group(function () {

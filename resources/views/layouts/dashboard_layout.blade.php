@@ -224,6 +224,28 @@
             });
         });
     </script>
+    <script>
+        $(document).ready(function() {
+            $('#modelSelector').on('change', function() {
+                const selectedModel = $(this).val();
+
+                $.ajax({
+                    url: '{{ route('common.getSelectedModel') }}',
+                    method: 'POST',
+                    data: {
+                        model_version: selectedModel,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        // console.log('Model selected:', response);
+                    },
+                    error: function(xhr) {
+                        // console.error('Error selecting model:', xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
 
     @stack('dashboard-scripts')
 </body>
