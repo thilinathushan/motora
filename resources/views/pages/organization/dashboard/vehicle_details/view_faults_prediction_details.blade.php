@@ -19,7 +19,8 @@
                                 <label for="registration_number" class="form-label fw-semibold">1.Registration
                                     Number</label>
                                 <input type="text" class="form-control" id="registration_number"
-                                    name="registration_number" placeholder="SP ABC 1234" required>
+                                    name="registration_number" placeholder="SP ABC 1234"
+                                    value="{{ old('registration_number') }}" required>
                                 @error('registration_number')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
@@ -27,7 +28,7 @@
                             <div class="mb-3 col-md-6">
                                 <label for="chassis_number" class="form-label fw-semibold">2.Chassis Number</label>
                                 <input type="text" class="form-control" id="chassis_number" name="chassis_number"
-                                    required>
+                                    value="{{ old('chassis_number') }}" required>
                                 @error('chassis_number')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
@@ -35,7 +36,8 @@
 
                             <div class="mb-3 col-md-6">
                                 <label for="engine_no" class="form-label fw-semibold">3.Engine No</label>
-                                <input type="text" class="form-control" id="engine_no" name="engine_no" required>
+                                <input type="text" class="form-control" id="engine_no" name="engine_no"
+                                    value="{{ old('engine_no') }}" required>
                                 @error('engine_no')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror

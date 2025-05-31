@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\PDF;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 
 class DashboardController extends Controller
@@ -477,6 +478,7 @@ class DashboardController extends Controller
                     'v.chassis_number',
                     'v.engine_no',
                     'v.registration_number',
+                    'v.class_of_vehicle'
                 ])
                 ->join('vehicles AS v', 'v.id', 'vehicle_services.vehicle_id')
                 ->join('organizations AS o', 'o.id', 'vehicle_services.vehicle_service_organization_id')
@@ -646,7 +648,7 @@ class DashboardController extends Controller
             ->first();
 
         if(!$vehicle){
-            return redirect()->back()->with('error', 'Vehicle not found.');
+            return redirect()->route('dashboard.faultsPredictionView')->withInput()->with('error', 'Vehicle not found.');
         }
         $vehicleEmissions = VehicleEmission::select([
                 'id',
@@ -660,8 +662,8 @@ class DashboardController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
-        if(!isset($vehicleEmissions)){
-            return redirect()->back()->with('error', 'Vehicle emissions not found.');
+        if($vehicleEmissions->isEmpty()){
+            return redirect()->route('dashboard.faultsPredictionView')->withInput()->with('error', 'Vehicle emissions not found.');
         }
 
         $vehicleServiceRecord = VehicleService::where('vehicle_id', $validated['vehicle_id'])
@@ -670,7 +672,7 @@ class DashboardController extends Controller
             ->first();
 
         if(!isset($vehicleServiceRecord)){
-            return redirect()->back()->with('error', 'Vehicle service record not found.');
+            return redirect()->route('dashboard.faultsPredictionView')->withInput()->with('error', 'Vehicle service record not found.');
         }
 
         // report Date
@@ -678,6 +680,9 @@ class DashboardController extends Controller
 
         $previous_owners = json_decode($vehicle->previous_owners);
         $totalRegCount = is_array($previous_owners) ? count($previous_owners) + 1 : 0 + 1;
+
+        $isMotorCycle = $vehicle->class_of_vehicle === 'MOTOR CYCLE';
+        $isMotorTricycle = $vehicle->class_of_vehicle === 'MOTOR TRICYCLE';
 
         $record = [
             "vehicle_class"=> $vehicle->class_of_vehicle,
@@ -703,6 +708,17 @@ class DashboardController extends Controller
             "engine_capacity"=> $vehicle->cylinder_capacity,
             "emission_test_status"=> $vehicleEmissions->last()->overall_status
         ];
+
+        if($isMotorCycle || $isMotorTricycle) {
+            $record = Arr::except($record, ['is_ac_filter_change', 'ac_gas_level']);
+            
+            if($isMotorCycle) {
+                $record = Arr::except($record, ['is_deferential_oil_change']);
+            }
+            if($isMotorTricycle) {
+                $record = Arr::except($record, ['is_radiator_oil_chane']);
+            }
+        }
 
         // get the ML Result
         $mlResult = $this->getResultFromMLModel($record);

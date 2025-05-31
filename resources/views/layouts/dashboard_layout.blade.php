@@ -246,6 +246,24 @@
             });
         });
     </script>
+    <script>
+        function updateModelText() {
+            const isSmall = window.innerWidth <= 375;
+            const select = document.getElementById('modelSelector');
+            const options = select.options;
+
+            for (let i = 0; i < options.length; i++) {
+                const full = options[i].getAttribute('data-fulltext');
+                const short = options[i].getAttribute('data-shorttext');
+                options[i].text = isSmall ? short : full;
+            }
+        }
+
+        // Call initially and on resize
+        updateModelText();
+        window.addEventListener('resize', updateModelText);
+    </script>
+
 
     @stack('dashboard-scripts')
 </body>

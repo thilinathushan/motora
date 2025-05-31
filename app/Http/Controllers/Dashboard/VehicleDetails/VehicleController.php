@@ -188,6 +188,7 @@ class VehicleController extends Controller
                 'registration_number' => $vehicle->registration_number,
                 'chassis_number' => $vehicle->chassis_number,
                 'engine_no' => $vehicle->engine_no,
+                'class_of_vehicle' => $vehicle->class_of_vehicle,
             ];
         }else{
             $result = [
