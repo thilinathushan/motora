@@ -15,4 +15,14 @@ class Organization extends Model
         'main_location_id',
         'br_path'
     ];
+
+    public function users()
+    {
+        return $this->hasMany(OrganizationUser::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(OrganizationCategory::class, 'org_cat_id');
+    }
 }

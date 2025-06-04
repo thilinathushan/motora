@@ -17,4 +17,9 @@ class Location extends Model
         'postal_code',
         'phone_number'
     ];
+
+    public function users()
+    {
+        return $this->hasMany(OrganizationUser::class);
+    }
 }

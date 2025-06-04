@@ -163,16 +163,28 @@
                         </x-dashboard.nav-item>
                     @endif
 
-                    @if (!Auth::guard('web')->check())
+                    @if (Auth::guard('organization_user')->check() &&
+                        (Auth::guard('organization_user')->user()->hasRole('Organization Super Admin') ||
+                        Auth::guard('organization_user')->user()->hasRole('Organization Admin') ||
+                        Auth::guard('organization_user')->user()->hasRole('Organization Manager') 
+                        ))
                         <x-dashboard.nav-item href="#"
                             :active="false"
                             menuHeading="User"
-                            :isNew="true"
+                            :hasSub="true"
                             >
                             <x-slot:icon>
                                 <i class="fi fi-rr-circle-user"></i>
                             </x-slot:icon>
                             User Details
+                            <x-slot:singleNavItem>
+                                @if(Auth::guard('organization_user')->user()->hasRole('Organization Super Admin') ||
+                                    Auth::guard('organization_user')->user()->hasRole('Organization Admin')
+                                    )
+                                    <x-dashboard.single-nav-item href="{{ route('dashboard.organizationUser.create') }}"> Create User</x-dashboard.single-nav-item>
+                                @endif
+                                <x-dashboard.single-nav-item href="{{ route('dashboard.organizationUser.index') }}"> Manage Users</x-dashboard.single-nav-item>
+                            </x-slot:singleNavItem>
                         </x-dashboard.nav-item>
                     @endif
                 </ul>

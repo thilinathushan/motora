@@ -11,4 +11,9 @@ class OrganizationCategory extends Model
     
     protected $fillable = ['name'];
 
+    public function organizations()
+    {
+        return $this->hasMany(Organization::class, 'org_cat_id');
+    }
+
 }

@@ -9,6 +9,8 @@ use App\Http\Controllers\Dashboard\VehicleInsuranceController;
 use App\Http\Controllers\Dashboard\VehicleServiceController;
 use App\Http\Controllers\LandingPage\LandingController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\OrganizationUserController;
+use App\Http\Controllers\OrganizationUserPasswordController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
@@ -119,14 +121,26 @@ Route::controller(VehicleInsuranceController::class)->group(function () {
 Route::controller(CommonController::class)->group(function () {
     Route::get('/get-province/{district_id}', 'getProvince')->name('common.getProvince');
     Route::post('/getSelectedModel', 'getSelectedModel')->name('common.getSelectedModel');
+    Route::post('/dashboard/generate-password', 'generatePassword')->name('dashboard.generate-password');
 });
 
 Route::controller(WalletController::class)->group(function () {
     Route::post('/wallet/connect', 'connect')->name('wallet.connect');
 })->middleware(['auth:organization_user,web', 'verified']);
 
+Route::controller(OrganizationUserController::class)->group(function () {
+    Route::get('/dashboard/organization-user/index', 'index')->name('dashboard.organizationUser.index');
+    Route::get('/dashboard/organization-user/create', 'create')->name('dashboard.organizationUser.create');
+    Route::post('/dashboard/organization-user/store', 'store')->name('dashboard.organizationUser.store');
+    Route::get('/dashboard/organization-user/edit/{id}', 'edit')->name('dashboard.organizationUser.edit');
+    Route::post('/dashboard/organization-user/update/{id}', 'update')->name('dashboard.organizationUser.update');
+    Route::get('/dashboard/organization-user/toggleOrganizationUser/{id}', 'toggleOrganizationUser')->name('dashboard.organizationUser.toggleOrganizationUser');
+})->middleware(['auth:organization_user', 'verified']);
 
-
+Route::controller(OrganizationUserPasswordController::class)->group(function () {
+    Route::get('/organization-user/set-password/{user}', 'showSetPasswordForm')->name('organizationUser.setPassword')->middleware('signed');
+    Route::post('/organization-user/set-password/{user}', 'submitPassword')->name('organizationUser.submitPassword');
+});
 
 
 

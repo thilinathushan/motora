@@ -13,11 +13,14 @@ class OrganizationUser extends Authenticatable implements MustVerifyEmail
 
     protected $fillable = [
         'u_tp_id',
+        'organization_id',
+        'location_id',
         'org_cat_id',
         'loc_org_id',
         'name',
         'email',
         'password',
+        'must_set_password',
         'phone_number',
         'wallet_address',
         'wallet_connected_at',
@@ -37,6 +40,28 @@ class OrganizationUser extends Authenticatable implements MustVerifyEmail
     public function userType()
     {
         return $this->belongsTo(UserType::class, 'u_tp_id');
+    }
+
+    public function organization()
+    {
+        return $this->belongsTo(Organization::class);
+    }
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
+    }
+
+    public function hasRole(string $roleName): bool
+    {
+        // We check if the userType relationship is loaded and if its name matches.
+        return $this->userType && $this->userType->name === $roleName;
+    }
+
+    public function hasCategory(string $categoryName): bool
+    {
+        // The magic of relationships: user -> organization -> category -> name
+        return $this->organization && $this->organization->category->name === $categoryName;
     }
 
     public function isDepartmentOfMotorTraffic()
