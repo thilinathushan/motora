@@ -23,7 +23,8 @@
                                 <th class="text-start">Valid To</th>
                                 <th class="text-start">Organization</th>
                                 <th class="text-start">Location</th>
-                                @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isInsuranceCompany())
+                                @if (Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->isInsuranceCompany() &&
+                                    !Auth::guard('organization_user')->user()->hasRole('Organization Employee')))
                                     <th class="text-center">Actions</th>
                                 @endif
                             </tr>
@@ -38,7 +39,8 @@
                                     <td class="text-start">{{ $vehicleInsuranceDetail->valid_to }}</td>
                                     <td class="text-start">{{ $vehicleInsuranceDetail->org_name }}</td>
                                     <td class="text-start">{{ $vehicleInsuranceDetail->loc_name }}</td>
-                                    @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isInsuranceCompany())
+                                    @if (Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->isInsuranceCompany() &&
+                                        !Auth::guard('organization_user')->user()->hasRole('Organization Employee')))
                                         <td class="text-center">
                                             <a class="btn btn-primary m-2"
                                                 href="{{ route('dashboard.editVehicleInsurance', $vehicleInsuranceDetail->id) }}"

@@ -122,6 +122,12 @@ class VehicleController extends Controller
 
     public function updateVehicleDetails(Request $request, $id)
     {
+        if(Auth::guard('organization_user')->check() &&
+            Auth::guard('organization_user')->user()->hasCategory('Department of Motor Traffic') &&
+            Auth::guard('organization_user')->user()->hasRole('Organization Employee'))
+        {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         $validatedData = $request->validate([
             'registration_number' => 'required|exists:vehicles,registration_number|max:255',
             'chassis_number' => 'required|string|exists:vehicles,chassis_number|max:255',

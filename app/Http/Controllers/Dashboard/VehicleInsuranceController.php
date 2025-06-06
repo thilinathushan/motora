@@ -49,6 +49,12 @@ class VehicleInsuranceController extends Controller
 
     public function updateVehicleInsurance(Request $request, $id)
     {
+        if(Auth::guard('organization_user')->check() &&
+            Auth::guard('organization_user')->user()->hasCategory('Insurance Company') &&
+            Auth::guard('organization_user')->user()->hasRole('Organization Employee'))
+        {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         $validatedData = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
             'registration_number' => 'required',

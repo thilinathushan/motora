@@ -15,6 +15,10 @@ class OrganizationController extends Controller
 {
     public function store_organization_details(Request $request)
     {
+        if(!(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->hasRole('Organization Super Admin'))) {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
+
         $validated = $request->validate([
             'org_name' => 'required',
             'org_category' => 'required',
@@ -76,8 +80,11 @@ class OrganizationController extends Controller
 
     public function update_organization_details(Request $request, $id)
     {
+        if(!(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->hasRole('Organization Super Admin'))) {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         $validated = $request->validate([
-            'org_name' => 'required',
+            'org_name' => 'nullable',
             'org_category' => 'required',
             'org_phone_no' => 'required',
             'org_address' => 'required|string|max:255',

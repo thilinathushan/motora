@@ -13,6 +13,9 @@ class LocationController extends Controller
 {
     public function store_location_details(Request $request)
     {
+        if(!(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->hasRole('Organization Super Admin'))) {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         $validated = $request->validate([
             'loc_address' => 'required|string|max:255',
             'loc_location' => 'required|string|max:255',
@@ -50,6 +53,9 @@ class LocationController extends Controller
 
     public function updateLocationDetails(Request $request, $id)
     {
+        if(!(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->hasRole('Organization Super Admin'))) {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         $validated = $request->validate([
             'loc_address' => 'required|string|max:255',
             'loc_location' => 'required|string|max:255',
@@ -79,6 +85,9 @@ class LocationController extends Controller
 
     public function changeLocationStatus($id)
     {
+        if(!(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->hasRole('Organization Super Admin'))) {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         $location = Location::withTrashed()->findOrFail($id);
 
         if ($location->trashed()) {

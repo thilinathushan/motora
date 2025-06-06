@@ -109,12 +109,15 @@
                                             Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()) ||
                                             (Auth::guard('web')->check() && Auth::guard('web')->user()))
                                         <td class="text-center">
-                                            @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic())
+                                            @if (Auth::guard('organization_user')->check() &&
+                                                (Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic() &&
+                                                !Auth::guard('organization_user')->user()->hasRole('Organization Employee')))
                                                 <a class="btn btn-primary m-2"
                                                     href="{{ route('dashboard.editVehicleDetails', $vehicleDetail->id) }}">
                                                     <i class="fi fi-rr-pencil"></i> Edit
                                                 </a>
-                                            @else
+                                            @endif
+                                            @if(Auth::guard('web')->user())
                                                 <a class="btn btn-danger text-white m-2"
                                                     href="{{ route('dashboard.vehicle.unassignVehicleFromUser', $vehicleDetail->id) }}">
                                                     <i class="fi fi-rr-trash"></i> Unassign

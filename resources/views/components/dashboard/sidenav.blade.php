@@ -28,7 +28,7 @@
                         Dashboard
                     </x-dashboard.nav-item>
 
-                    @if (!Auth::guard('web')->user())
+                    @if (!Auth::guard('web')->user() && (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->hasRole('Organization Super Admin')))
                         <x-dashboard.nav-item href="{{ route('dashboard.organization_details') }}"
                             :active="request()->is('dashboard/organization_details')"
                             menuHeading="Organization"
@@ -166,7 +166,7 @@
                     @if (Auth::guard('organization_user')->check() &&
                         (Auth::guard('organization_user')->user()->hasRole('Organization Super Admin') ||
                         Auth::guard('organization_user')->user()->hasRole('Organization Admin') ||
-                        Auth::guard('organization_user')->user()->hasRole('Organization Manager') 
+                        Auth::guard('organization_user')->user()->hasRole('Organization Manager')
                         ))
                         <x-dashboard.nav-item href="#"
                             :active="false"

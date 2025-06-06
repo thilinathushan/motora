@@ -30,7 +30,8 @@
                                 <th class="text-center">Fuel Type</th>
                                 <th class="text-center">Odometer</th>
                                 <th class="text-center">Overall Status</th>
-                                @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isEmissionTestCenter())
+                                @if (Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->isEmissionTestCenter() &&
+                                    !Auth::guard('organization_user')->user()->hasRole('Organization Employee')))
                                     <th class="text-center">Actions</th>
                                 @endif
                             </tr>
@@ -51,7 +52,8 @@
                                     <td class="text-center">{{ $vehicleEmission->fuel_type }}</td>
                                     <td class="text-center">{{ number_format($vehicleEmission->odometer) }}</td>
                                     <td class="text-center">{{ $vehicleEmission->overall_status }}</td>
-                                    @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isEmissionTestCenter())
+                                    @if (Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->isEmissionTestCenter() &&
+                                        !Auth::guard('organization_user')->user()->hasRole('Organization Employee')))
                                         <td class="text-center">
 
                                             <a class="btn btn-primary m-2"

@@ -81,6 +81,12 @@ class VehicleServiceController extends Controller
 
     public function updateVehicleServiceDetails(Request $request, $id)
     {
+        if(Auth::guard('organization_user')->check() &&
+            Auth::guard('organization_user')->user()->hasCategory('Service Center') &&
+            Auth::guard('organization_user')->user()->hasRole('Organization Employee'))
+        {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         $validatedData = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
             'registration_number' => 'required|exists:vehicles,registration_number',

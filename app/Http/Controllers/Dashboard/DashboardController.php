@@ -29,6 +29,10 @@ class DashboardController extends Controller
     // Display Organization Details
     public function organizationDetails()
     {
+        if(!(Auth::guard('organization_user')->check() &&
+            Auth::guard('organization_user')->user()->hasRole('Organization Super Admin'))) {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         $organization_user = Auth::guard('organization_user')->user();
 
         if (!$organization_user) {
@@ -89,6 +93,9 @@ class DashboardController extends Controller
     // Display Add Location Details
     public function addLocationDetails()
     {
+        if(!(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->hasRole('Organization Super Admin'))) {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         $organization_user = Auth::guard('organization_user')->user();
 
         if (!$organization_user) {
@@ -104,6 +111,9 @@ class DashboardController extends Controller
     // Display Edit Location Details
     public function editLocationDetails($loc_id)
     {
+        if(!(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->hasRole('Organization Super Admin'))) {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         $organization_user = Auth::guard('organization_user')->user();
 
         if (!$organization_user) {
@@ -127,6 +137,9 @@ class DashboardController extends Controller
     // Display Manage Location Details
     public function manageLocationDetails()
     {
+        if(!(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->hasRole('Organization Super Admin'))) {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         // name, address, district, province, postal_code, phone_number, Actions(Edit, Delete)
         $organization_user = Auth::guard('organization_user')->user();
 
@@ -176,6 +189,12 @@ class DashboardController extends Controller
     // Display Edit Vehicle Details
     public function editVehicleDetails($id)
     {
+        if(Auth::guard('organization_user')->check() &&
+            Auth::guard('organization_user')->user()->hasCategory('Department of Motor Traffic') &&
+            Auth::guard('organization_user')->user()->hasRole('Organization Employee'))
+        {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()){
             $organization_user = Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic();
 
@@ -312,6 +331,12 @@ class DashboardController extends Controller
 
     public function editVehicleLicenses($id)
     {
+        if(Auth::guard('organization_user')->check() &&
+            Auth::guard('organization_user')->user()->hasCategory('Divisional Secretariat') &&
+            Auth::guard('organization_user')->user()->hasRole('Organization Employee'))
+        {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDivisionalSecretariat()) {
             $vehicleLicenses = VehicleRevenueLicense::join('vehicles', 'vehicle_revenue_licenses.vehicle_id', 'vehicles.id')
                 ->select('vehicle_revenue_licenses.*', 'vehicles.registration_number', 'vehicles.current_owner_address_idNo', 'vehicles.unladen', 'vehicles.seating_capacity', 'vehicles.class_of_vehicle', 'vehicles.fuel_type')
@@ -391,6 +416,12 @@ class DashboardController extends Controller
 
     public function editEmissionVehicle($id, $odometer)
     {
+        if(Auth::guard('organization_user')->check() &&
+            Auth::guard('organization_user')->user()->hasCategory('Emission Test Center') &&
+            Auth::guard('organization_user')->user()->hasRole('Organization Employee'))
+        {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         $vehicle = Vehicle::select(['id', 'registration_number', 'class_of_vehicle', 'engine_no', 'chassis_number', 'make', 'model', 'year_of_manufacture', 'fuel_type'])
                 ->findOrFail($id);
         if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isEmissionTestCenter()){
@@ -466,6 +497,12 @@ class DashboardController extends Controller
 
     public function editVehicleServiceDetails($id)
     {
+        if(Auth::guard('organization_user')->check() &&
+            Auth::guard('organization_user')->user()->hasCategory('Service Center') &&
+            Auth::guard('organization_user')->user()->hasRole('Organization Employee'))
+        {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isServiceCenter()){
             $org_user = Auth::guard('organization_user')->user();
             $org_id = OrganizationUser::join('location_organizations AS lo', 'organization_users.loc_org_id', 'lo.id')
@@ -543,6 +580,12 @@ class DashboardController extends Controller
 
     public function editVehicleInsurance($id)
     {
+        if(Auth::guard('organization_user')->check() &&
+            Auth::guard('organization_user')->user()->hasCategory('Insurance Company') &&
+            Auth::guard('organization_user')->user()->hasRole('Organization Employee'))
+        {
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
+        }
         if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isInsuranceCompany()){
             $org_user = Auth::guard('organization_user')->user();
             $org_id = OrganizationUser::join('location_organizations AS lo', 'organization_users.loc_org_id', 'lo.id')
@@ -711,7 +754,7 @@ class DashboardController extends Controller
 
         if($isMotorCycle || $isMotorTricycle) {
             $record = Arr::except($record, ['is_ac_filter_change', 'ac_gas_level']);
-            
+
             if($isMotorCycle) {
                 $record = Arr::except($record, ['is_deferential_oil_change']);
             }

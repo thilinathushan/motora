@@ -28,7 +28,8 @@
                                 <th class="text-center">Number of Seats</th>
                                 <th class="text-center">Validity Period</th>
                                 <th class="text-center">Location</th>
-                                @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDivisionalSecretariat())
+                                @if (Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->isDivisionalSecretariat() &&
+                                    !Auth::guard('organization_user')->user()->hasRole('Organization Employee')))
                                     <th class="text-center">Actions</th>
                                 @endif
                             </tr>
@@ -47,7 +48,8 @@
                                     <td class="text-center">{{ $vehicleLicense->seating_capacity }}</td>
                                     <td class="text-center">{{ $vehicleLicense->valid_from }} - {{ $vehicleLicense->valid_to }}</td>
                                     <td class="text-center">{{ $vehicleLicense->loc_name }}</td>
-                                    @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDivisionalSecretariat())
+                                    @if (Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->isDivisionalSecretariat() &&
+                                        !Auth::guard('organization_user')->user()->hasRole('Organization Employee')))
                                         <td class="text-center">
 
                                             <a class="btn btn-primary m-2"

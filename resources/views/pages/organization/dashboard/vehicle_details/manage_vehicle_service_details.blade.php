@@ -37,7 +37,8 @@
                                 <th class="text-start">Tyre Condition</th>
                                 <th class="text-start">Organization</th>
                                 <th class="text-start">Location</th>
-                                @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isServiceCenter())
+                                @if (Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->isServiceCenter() &&
+                                    !Auth::guard('organization_user')->user()->hasRole('Organization Employee')))
                                     <th class="text-center">Actions</th>
                                 @endif
                             </tr>
@@ -66,7 +67,8 @@
                                     <td class="text-center">{{ $vehicleServiceDetail->tyre_condition }}</td>
                                     <td class="text-center">{{ $vehicleServiceDetail->org_name }}</td>
                                     <td class="text-center">{{ $vehicleServiceDetail->loc_name }}</td>
-                                    @if (Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isServiceCenter())
+                                    @if (Auth::guard('organization_user')->check() && (Auth::guard('organization_user')->user()->isServiceCenter() &&
+                                        !Auth::guard('organization_user')->user()->hasRole('Organization Employee')))
                                         <td class="text-center">
                                             <a class="btn btn-primary m-2"
                                                 href="{{ route('dashboard.editVehicleServiceDetails', $vehicleServiceDetail->id) }}"
