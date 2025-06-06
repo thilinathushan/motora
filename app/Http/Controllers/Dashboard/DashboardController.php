@@ -15,6 +15,7 @@ use App\Models\VehicleEmission;
 use App\Models\VehicleInsurance;
 use App\Models\VehicleRevenueLicense;
 use App\Models\VehicleService;
+use App\Models\VehicleVerificationHistory;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -228,6 +229,15 @@ class DashboardController extends Controller
                         ->where('user_vehicles.user_id', $user->id)
                         ->select('vehicles.*')
                         ->get();
+
+                    // need to get the verification details
+                    $notVerifiedVehicleIds = $vehicleDetails->where('verification_score', '!=', '4')->pluck('id')->toArray();
+                    $verificationStatuses = VehicleVerificationHistory::whereIn('vehicle_id', $notVerifiedVehicleIds)
+                        ->get()->groupBy('vehicle_id');
+
+                    foreach ($vehicleDetails as $vehicle) {
+                        $vehicle->verification_details = $verificationStatuses[$vehicle->id] ?? collect([]);
+                    }
                 }else{
                     return redirect()->route('organization.login_view');
                 }

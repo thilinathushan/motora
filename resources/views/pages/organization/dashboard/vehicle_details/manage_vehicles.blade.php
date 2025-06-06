@@ -167,6 +167,29 @@
                                                                                         <li class="list-group-item">Emission test certificate</li>
                                                                                         <li class="list-group-item">Proof of identity</li>
                                                                                     </ol>
+
+                                                                                    @if($vehicleDetail->verification_details->first() !== null)
+                                                                                        <div class="mt-3 alert d-flex align-items-center
+                                                                                            @if($vehicleDetail->verification_details->first()->ds_verification == 0 &&
+                                                                                                $vehicleDetail->verification_details->first()->ds_verification_date == null)
+                                                                                                alert-danger
+                                                                                            @else
+                                                                                                alert-success
+                                                                                            @endif" role="alert">
+                                                                                            @if($vehicleDetail->verification_details->first()->ds_verification == 0 &&
+                                                                                                $vehicleDetail->verification_details->first()->ds_verification_date == null)
+                                                                                                <div>
+                                                                                                    <i class="fi fi-rr-cross-circle me-2 align-middle"></i>
+                                                                                                    <strong>Currently Not Verified</strong>
+                                                                                                </div>
+                                                                                            @else
+                                                                                                <div>
+                                                                                                    <i class="fi fi-rr-check-circle me-2 align-middle"></i>
+                                                                                                    <strong>Verified</strong>
+                                                                                                </div>
+                                                                                            @endif
+                                                                                        </div>
+                                                                                    @endif
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -184,6 +207,29 @@
                                                                                         <li class="list-group-item">Vehicle in good running condition</li>
                                                                                         <li class="list-group-item">Proof of identity</li>
                                                                                     </ol>
+
+                                                                                    @if($vehicleDetail->verification_details->first() !== null)
+                                                                                        <div class="mt-3 alert d-flex align-items-center
+                                                                                            @if($vehicleDetail->verification_details->first()->emission_verification == 0 &&
+                                                                                                $vehicleDetail->verification_details->first()->emission_verification_date == null)
+                                                                                                alert-danger
+                                                                                            @else
+                                                                                                alert-success
+                                                                                            @endif" role="alert">
+                                                                                            @if($vehicleDetail->verification_details->first()->emission_verification == 0 &&
+                                                                                                $vehicleDetail->verification_details->first()->emission_verification_date == null)
+                                                                                                <div>
+                                                                                                    <i class="fi fi-rr-cross-circle me-2 align-middle"></i>
+                                                                                                    <strong>Currently Not Verified</strong>
+                                                                                                </div>
+                                                                                            @else
+                                                                                                <div>
+                                                                                                    <i class="fi fi-rr-check-circle me-2 align-middle"></i>
+                                                                                                    <strong>Verified</strong>
+                                                                                                </div>
+                                                                                            @endif
+                                                                                        </div>
+                                                                                    @endif
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -201,6 +247,29 @@
                                                                                         <li class="list-group-item">Previous insurance policy (if any)</li>
                                                                                         <li class="list-group-item">Proof of identity</li>
                                                                                     </ol>
+
+                                                                                    @if($vehicleDetail->verification_details->first() !== null)
+                                                                                        <div class="mt-3 alert d-flex align-items-center
+                                                                                            @if($vehicleDetail->verification_details->first()->insurance_verification == 0 &&
+                                                                                                $vehicleDetail->verification_details->first()->insurance_verification_date == null)
+                                                                                                alert-danger
+                                                                                            @else
+                                                                                                alert-success
+                                                                                            @endif" role="alert">
+                                                                                            @if($vehicleDetail->verification_details->first()->insurance_verification == 0 &&
+                                                                                                $vehicleDetail->verification_details->first()->insurance_verification_date == null)
+                                                                                                <div>
+                                                                                                    <i class="fi fi-rr-cross-circle me-2 align-middle"></i>
+                                                                                                    <strong>Currently Not Verified</strong>
+                                                                                                </div>
+                                                                                            @else
+                                                                                                <div>
+                                                                                                    <i class="fi fi-rr-check-circle me-2 align-middle"></i>
+                                                                                                    <strong>Verified</strong>
+                                                                                                </div>
+                                                                                            @endif
+                                                                                        </div>
+                                                                                    @endif
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -219,6 +288,29 @@
                                                                                         <li class="list-group-item">Tire condition check</li>
                                                                                         <li class="list-group-item">General vehicle inspection</li>
                                                                                     </ol>
+
+                                                                                    @if($vehicleDetail->verification_details->first() !== null)
+                                                                                        <div class="mt-3 alert d-flex align-items-center
+                                                                                            @if($vehicleDetail->verification_details->first()->service_verification == 0 &&
+                                                                                                $vehicleDetail->verification_details->first()->service_verification_date == null)
+                                                                                                alert-danger
+                                                                                            @else
+                                                                                                alert-success
+                                                                                            @endif" role="alert">
+                                                                                            @if($vehicleDetail->verification_details->first()->service_verification == 0 &&
+                                                                                                $vehicleDetail->verification_details->first()->service_verification_date == null)
+                                                                                                <div>
+                                                                                                    <i class="fi fi-rr-cross-circle me-2 align-middle"></i>
+                                                                                                    <strong>Currently Not Verified</strong>
+                                                                                                </div>
+                                                                                            @else
+                                                                                                <div>
+                                                                                                    <i class="fi fi-rr-check-circle me-2 align-middle"></i>
+                                                                                                    <strong>Verified</strong>
+                                                                                                </div>
+                                                                                            @endif
+                                                                                        </div>
+                                                                                    @endif
                                                                                 </div>
                                                                             </div>
                                                                         </div>
