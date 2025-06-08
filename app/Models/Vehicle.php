@@ -49,6 +49,9 @@ class Vehicle extends Model
         'taxes_payable',
         'verification_score',
         'certificate_url',
+        'is_blockchain_created',
+        'blockchain_created_at',
+        'transaction_id'
     ];
 
     public function users()

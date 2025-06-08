@@ -127,6 +127,12 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'blockchain' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blockchain.log'),
+            'level' => 'debug',
+        ],
+
     ],
 
 ];
