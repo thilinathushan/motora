@@ -111,7 +111,10 @@
                                         <td class="text-center">
                                             @if (Auth::guard('organization_user')->check() &&
                                                 (Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic() &&
-                                                !Auth::guard('organization_user')->user()->hasRole('Organization Employee')))
+                                                !Auth::guard('organization_user')->user()->hasRole('Organization Employee')) ||
+                                                (Auth::guard('web')->check() && Auth::guard('web')->user() &&
+                                                $vehicleDetail->verification_score != '4' &&
+                                                $vehicleDetail->certificate_url != null))
                                                 <a class="btn btn-primary m-2"
                                                     href="{{ route('dashboard.editVehicleDetails', $vehicleDetail->id) }}">
                                                     <i class="fi fi-rr-pencil"></i> Edit

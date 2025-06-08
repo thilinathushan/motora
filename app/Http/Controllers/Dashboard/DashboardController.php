@@ -196,10 +196,13 @@ class DashboardController extends Controller
         {
             return redirect()->route('dashboard')->with('error', 'You do not have permission to access this page.');
         }
-        if(Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()){
-            $organization_user = Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic();
+        if((Auth::guard('organization_user')->check() && Auth::guard('organization_user')->user()->isDepartmentOfMotorTraffic()) ||
+            Auth::guard('web')->check() &&  Auth::guard('web')->user()){
 
-            if ($organization_user) {
+            if (Auth::guard('organization_user')->check()) {
+                $vehicle_details_add = false;
+                $vehicle_details = Vehicle::findOrFail($id);
+            } else {
                 $vehicle_details_add = false;
                 $vehicle_details = Vehicle::findOrFail($id);
             }
