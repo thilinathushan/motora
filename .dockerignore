@@ -1,33 +1,24 @@
-# Ignore files that should not be copied to the Docker image
-**/.classpath
-**/.dockerignore
-**/.git
-**/.gitignore
-**/.project
-**/.settings
-**/.toolstarget
-**/.vs
-**/.vscode
-**/.next
-**/.cache
-**/*.*proj.user
-**/*.dbmdl
-**/*.jfm
-**/charts
-**/node_modules
-**/npm-debug.log
-**/obj
-**/secrets.dev.yaml
-**/values.dev.yaml
+# === Ignore general dev directories ===
+.dockerignore
+.git
+.gitignore
+.vscode
+node_modules
+npm-debug.log
+obj
+charts
+*.user
+*.dbmdl
+*.jfm
 
 # Exclude the Dockerfile itself (no need to copy it into the image)
 **/Dockerfile*
 
-# Include the following files and directories in the Docker image
-!**/composer.json
-!**/composer.lock
-!**/artisan
-!**/vendor
+# === Don't exclude these files ===
+!composer.json
+!composer.lock
+!artisan
+!vendor/**
 
 # Optional: You can also exclude specific files like README, LICENSE if you don't want them in the image
 # LICENSE
