@@ -8,10 +8,6 @@ APP_ENV=${APP_ENV:-production}
 echo "Starting container initialization..."
 
 # Install PHP dependencies
-composer clearcache
-echo "Clearring composer cache & removing composerlock..."
-rm composer.lock
-composer update
 composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Copy .env.example to .env if it doesn't exist
