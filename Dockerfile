@@ -67,7 +67,8 @@ RUN apt-get update && apt-get install -y \
        libpng-dev libxml2-dev libgmp-dev libonig-dev libjpeg-dev libfreetype6-dev libgd-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Create a non-root user
-RUN useradd -m -u $uid -s /bin/bash $user
+RUN groupmod -g $uid $user && \
+    usermod -u $uid -d /var/www $user
 
 WORKDIR /var/www
 
