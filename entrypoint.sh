@@ -13,6 +13,7 @@ if ! command -v composer &> /dev/null; then
     exit 1
 fi
 
+echo "Composer version:"
 # Echo Composer version
 echo "Composer version: $(composer --version)"
 
