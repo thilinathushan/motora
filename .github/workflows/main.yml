@@ -21,6 +21,10 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Checkout repository — MUST COME FIRST
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       # Build and push the Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
