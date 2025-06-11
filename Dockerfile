@@ -43,27 +43,29 @@ FROM php:8.2-fpm
 ARG user=www-data
 ARG uid=1000
 
-# Install ONLY the required PHP extensions for running the app
+# Install runtime system libs AND temporary build dependencies in a single layer
 RUN apt-get update && apt-get install -y \
-    # Dependencies for your PHP extensions
+    # Build dependencies for PHP extensions (will be removed later)
     libpng-dev \
     libxml2-dev \
     libgmp-dev \
     libonig-dev \
-    gd \
     libjpeg-dev \
     libfreetype6-dev \
-    # General utilities
+    libgd-dev \
+    # General utilities needed at runtime
     zip \
     unzip \
     --no-install-recommends \
-    # Now, compile the PHP extensions
+    \
+    # Configure, then install PHP extensions
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd gmp \
-    # Finally, clean up the build dependencies to reduce image size
+    \
+    # Clean up build dependencies to make the final image smaller
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-       libpng-dev libxml2-dev libgmp-dev libonig-dev libjpeg-dev libfreetype6-dev \
+       libpng-dev libxml2-dev libgmp-dev libonig-dev libjpeg-dev libfreetype6-dev libgd-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # Create a non-root user
 RUN useradd -m -u $uid -s /bin/bash $user
 
