@@ -91,7 +91,7 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Set permissions
-RUN chown -R $user:$user /var/www/storage /var/www/bootstrap/cache
+RUN chown -R $user:$user /var/www
 
 USER $user
 
