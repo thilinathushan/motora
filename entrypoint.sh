@@ -5,7 +5,7 @@ set -e
 
 APP_ENV=${APP_ENV:-production}
 
-echo "Starting container initialization..."
+echo "Starting container initialization... hereeeeeeee..."
 
 # Check if Composer is installed
 if ! command -v composer &> /dev/null; then
