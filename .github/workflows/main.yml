@@ -1,4 +1,4 @@
-name: Build and Deploy Laravel App
+name: Motora Deployment
 
 on:
   push:
@@ -10,10 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # =================================================================
-      #  PART 1: CHECKOUT AND BUILD THE DOCKER IMAGE
-      #  (This part was already correct and is essential)
-      # =================================================================
+      # ===============================================================
+      #  PART 1: BUILD AND PUSH DOCKER IMAGE (This part is correct)
+      # ===============================================================
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,20 +32,15 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          # Make sure your repo name matches. e.g., 'motora'
           tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
-          # Use caching for faster builds in the future
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # =================================================================
-      #  PART 2: DEPLOY THE IMAGE TO THE AZURE VM
-      #  (This is the new, improved, and consolidated section)
-      # =================================================================
+      # ===============================================================
+      #  PART 2: DEPLOY TO VM (This is the simplified, correct part)
+      # ===============================================================
 
       - name: Copy compose.yaml to VM
-        # We only copy the compose file. The .env will be created from a secret,
-        # and all other application code is inside the Docker image.
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
@@ -56,7 +50,6 @@ jobs:
           target: "~/motora-app"
 
       - name: Deploy and Run on VM
-        # This single step securely creates the environment file and restarts the application
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VM_HOST }}
@@ -66,21 +59,19 @@ jobs:
             # Navigate to the application directory on the VM
             cd ~/motora-app
 
-            # Create the .env.docker file directly on the VM from the GitHub Secret
-            # This is the most secure and reliable method.
+            # Create the .env file securely from the GitHub Secret.
+            # This ONE command creates the complete, correct file every time.
             echo "${{ secrets.PROD_ENV_FILE }}" > .env.docker
             echo "✅ .env.docker file created on VM."
 
-            # Docker Compose will now read both compose.yaml and the new .env.docker file.
-            # It uses DOCKER_USERNAME from the .env file to pull the right image.
-
-            # Pull the latest version of the image we just pushed
+            # Pull the latest version of the image we just pushed to Docker Hub
             docker compose pull
 
-            # Bring down the old stack and remove any stale volumes to prevent permission issues
+            # Bring down any old containers and REMOVE STALE VOLUMES
             docker compose down --volumes
 
-            # Start the new stack in detached mode
+            # Start the new stack in detached mode. Docker Compose will use the
+            # compose.yaml and the .env.docker file we just created.
             docker compose up -d
 
             echo "🚀 Deployment to Azure VM successful!"
