@@ -52,5 +52,8 @@ else
     npm run dev &
 fi
 
+echo "👤 Running as: $(whoami)"
+php-fpm -tt || true  # test PHP-FPM config
+
 # Start PHP-FPM
 exec php-fpm -F
