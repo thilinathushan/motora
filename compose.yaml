@@ -8,7 +8,7 @@ services:
     container_name: motora-app
     restart: unless-stopped
     working_dir: /var/www/
-    env_file: .env.docker
+    env_file: .env
     volumes:
       - app-code:/var/www
     networks:
@@ -20,7 +20,7 @@ services:
     # image: mysql:8.0
     container_name: motora-db
     restart: unless-stopped
-    env_file: .env.docker
+    env_file: .env
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
