@@ -44,9 +44,25 @@ ARG user=www-data
 ARG uid=1000
 
 # Install ONLY the required PHP extensions for running the app
-RUN apt-get update && apt-get install -y libpng-dev libxml2-dev libgmp-dev \
+RUN apt-get update && apt-get install -y \
+    # Dependencies for your PHP extensions
+    libpng-dev \
+    libxml2-dev \
+    libgmp-dev \
+    libonig-dev \
+    gd \
+    libjpeg-dev \
+    libfreetype6-dev \
+    # General utilities
+    zip \
+    unzip \
+    --no-install-recommends \
+    # Now, compile the PHP extensions
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd gmp \
+    # Finally, clean up the build dependencies to reduce image size
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+       libpng-dev libxml2-dev libgmp-dev libonig-dev libjpeg-dev libfreetype6-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd gmp
 
 # Create a non-root user
 RUN useradd -m -u $uid -s /bin/bash $user
