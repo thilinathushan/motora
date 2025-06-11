@@ -25,6 +25,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Show repo contents
+        run: |
+          pwd
+          ls -R .
+
       # Build and push the Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
