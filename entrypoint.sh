@@ -6,6 +6,7 @@ set -e
 APP_ENV=${APP_ENV:-production}
 
 echo "Starting container initialization..."
+echo $(composer --version)
 
 # Install PHP dependencies
 composer update barryvdh/laravel-dompdf
