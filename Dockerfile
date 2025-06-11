@@ -43,3 +43,6 @@ RUN chmod -R 775 /var/www/storage \
 EXPOSE 9000
 
 USER $user
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["bash", "/usr/local/bin/entrypoint.sh"]

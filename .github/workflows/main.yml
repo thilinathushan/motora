@@ -30,6 +30,13 @@ jobs:
           pwd
           ls -R .
 
+      - name: Debug Dockerfile & Entrypoint
+        run: |
+          echo "====== Dockerfile ======"
+          cat Dockerfile
+          echo "====== entrypoint.sh ======"
+          cat entrypoint.sh
+
       # Build and push the Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
