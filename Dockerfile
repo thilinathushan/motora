@@ -45,26 +45,29 @@ ARG uid=1000
 
 # Install runtime system libs AND temporary build dependencies in a single layer
 RUN apt-get update && apt-get install -y \
-    # Build dependencies for PHP extensions (will be removed later)
+    # RUNTIME libraries (these will stay)
+    libgmp-dev \
+    libpng16-16 \
+    libjpeg62-turbo \
+    libfreetype6 \
+    zip \
+    unzip \
+    # BUILD dependencies (these will be removed)
     libpng-dev \
     libxml2-dev \
-    libgmp-dev \
     libonig-dev \
     libjpeg-dev \
     libfreetype6-dev \
     libgd-dev \
-    # General utilities needed at runtime
-    zip \
-    unzip \
     --no-install-recommends \
     \
-    # Configure, then install PHP extensions
+    # Configure and install PHP extensions
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd gmp \
     \
-    # Clean up build dependencies to make the final image smaller
+    # Clean up ONLY the build dependencies
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-       libpng-dev libxml2-dev libgmp-dev libonig-dev libjpeg-dev libfreetype6-dev libgd-dev \
+       libpng-dev libxml2-dev libonig-dev libjpeg-dev libfreetype6-dev libgd-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Create a non-root user
 RUN groupmod -g $uid $user && \
