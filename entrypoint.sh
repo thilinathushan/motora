@@ -6,7 +6,7 @@ set -e
 APP_ENV=${APP_ENV:-production}
 
 echo "🚀 EntryPoint Activated at $(date)"
-echo "Starting container initialization... hereeeeeeee..."
+echo "Starting container initialization..."
 
 # Check if Composer is installed
 if ! command -v composer &> /dev/null; then
@@ -14,8 +14,6 @@ if ! command -v composer &> /dev/null; then
     exit 1
 fi
 
-echo "Composer version:"
-# Echo Composer version
 echo "Composer version: $(composer --version)"
 
 # Install PHP dependencies
@@ -28,9 +26,14 @@ composer validate
 composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Copy .env.example to .env if it doesn't exist
-if [ ! -f /var/www/.env ]; then
-    cp /var/www/.env.example /var/www/.env
-fi
+# if [ ! -f /var/www/.env ]; then
+#     cp /var/www/.env.example /var/www/.env
+# fi
+cp /var/www/.env.docker /var/www/.env
+
+echo "🧪 Dumping Laravel DB config:"
+php artisan tinker --execute="dump(config('database.connections.mysql'))"
+
 
 # Generate application key
 php artisan key:generate
