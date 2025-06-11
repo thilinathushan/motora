@@ -53,4 +53,4 @@ else
 fi
 
 # Start PHP-FPM
-exec php-fpm
+exec php-fpm -F
