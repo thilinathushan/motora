@@ -68,6 +68,10 @@ php artisan key:generate
 # Run migrations
 php artisan migrate --force
 
+# Create the storage link CORRECTLY inside the container
+echo "Creating storage link..."
+php artisan storage:link
+
 # # Check environment and build assets
 # if [ "$APP_ENV" == "production" ]; then
 #     echo "Production environment detected, building assets..."
