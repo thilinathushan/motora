@@ -34,6 +34,7 @@ cp /var/www/.env.docker /var/www/.env
 echo "🧪 Dumping Laravel DB config:"
 php artisan tinker --execute="dump(config('database.connections.mysql'))"
 
+php artisan optimize
 
 # Generate application key
 php artisan key:generate
