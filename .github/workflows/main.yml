@@ -25,8 +25,12 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
+          context: .
+          file: ./Dockerfile
           push: true
           tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+          no-cache: true
+          pull: true
 
       # SSH into the VM and deploy
       - name: Deploy to VM

@@ -5,6 +5,7 @@ set -e
 
 APP_ENV=${APP_ENV:-production}
 
+echo "🚀 EntryPoint Activated at $(date)"
 echo "Starting container initialization... hereeeeeeee..."
 
 # Check if Composer is installed
