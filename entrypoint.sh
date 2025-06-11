@@ -6,7 +6,15 @@ set -e
 APP_ENV=${APP_ENV:-production}
 
 echo "Starting container initialization..."
-echo $(composer --version)
+
+# Check if Composer is installed
+if ! command -v composer &> /dev/null; then
+    echo "Composer is not installed. Please install Composer first."
+    exit 1
+fi
+
+# Echo Composer version
+echo "Composer version: $(composer --version)"
 
 # Install PHP dependencies
 composer update barryvdh/laravel-dompdf
