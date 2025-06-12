@@ -19,7 +19,7 @@ export default defineConfig(({ command, mode }) => {
 
     if (command === "serve") {
         config.server = {
-            host: "0.0.0.0",
+            host: env.APP_URL,
             port: 5173,
             strictPort: true,
             hmr: {
