@@ -31,7 +31,8 @@ services:
     networks:
       - motora
   nginx:
-    image: nginx:1.27.3-alpine
+    build:
+      context: ./docker-compose/nginx
     container_name: motora-nginx
     restart: unless-stopped
     ports:
