@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 
+const env = env("APP_URL");
+
 export default defineConfig({
     plugins: [
         laravel({
@@ -18,7 +20,7 @@ export default defineConfig({
         port: 5173,
         strictPort: true,
         hmr: {
-            host: env("APP_URL"),
+            host: env,
         },
     },
 });
