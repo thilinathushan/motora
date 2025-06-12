@@ -13,6 +13,8 @@ services:
       - app-code:/var/www
     networks:
       - motora
+    depends_on:
+      - db
     # command: ["./entrypoint.sh"]
 
   db:
@@ -20,7 +22,6 @@ services:
     # image: mysql:8.0
     container_name: motora-db
     restart: unless-stopped
-    env_file: .env
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
@@ -28,6 +29,8 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
+    volumes:
+      - motora-db-data:/var/lib/mysql
     networks:
       - motora
   nginx:
@@ -52,3 +55,4 @@ networks:
 
 volumes:
   app-code:
+  motora-db-data:

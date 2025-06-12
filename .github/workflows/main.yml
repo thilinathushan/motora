@@ -40,16 +40,24 @@ jobs:
       #  PART 2: DEPLOY TO VM (This is the simplified, correct part)
       # ===============================================================
 
-      - name: Copy compose.yaml to VM
+      - name: Create deployment archive
+        # We bundle everything needed for deployment into a single tarball.
+        # This includes the compose file and the entire docker-compose directory.
+        run: tar -czf deploy.tar.gz compose.yaml docker-compose/
+
+      - name: Copy deployment archive to VM
+        # We only need to copy this one single file.
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
-          source: "compose.yaml"
+          source: "deploy.tar.gz"
           target: "~/motora-app"
 
       - name: Deploy and Run on VM
+        # This single step securely creates the environment file, unpacks the
+        # archive, and restarts the application.
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VM_HOST }}
@@ -59,19 +67,25 @@ jobs:
             # Navigate to the application directory on the VM
             cd ~/motora-app
 
+            # Unpack the archive, overwriting any old files.
+            tar -xzf deploy.tar.gz
+            echo "✅ Deployment archive unpacked."
+
             # Create the .env file securely from the GitHub Secret.
-            # This ONE command creates the complete, correct file every time.
             echo "${{ secrets.PROD_ENV_FILE }}" > .env
             echo "✅ .env file created on VM."
 
-            # Pull the latest version of the image we just pushed to Docker Hub
-            docker compose pull
+            # Now, Docker Compose will find everything it needs:
+            # compose.yaml, .env, and the docker-compose/nginx/ directory.
+            
+            # Pull the latest image for the app service
+            docker compose pull app
 
-            # Bring down any old containers and REMOVE STALE VOLUMES
+            # Bring down the old stack and remove any stale volumes
             docker compose down --volumes
 
-            # Start the new stack in detached mode. Docker Compose will use the
-            # compose.yaml and the .env.docker file we just created.
-            docker compose up -d
+            # Start the new stack in detached mode.
+            # It will build the custom nginx image automatically.
+            docker compose up -d --build
 
             echo "🚀 Deployment to Azure VM successful!"
