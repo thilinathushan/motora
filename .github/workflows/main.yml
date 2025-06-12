@@ -64,10 +64,29 @@ jobs:
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
-            # Navigate to the application directory on the VM
-            cd ~/motora-app
+            # Navigate to the home directory first.
+            cd ~
 
-            # Unpack the archive, overwriting any old files.
+            # Ensure the app directory exists.
+            mkdir -p motora-app
+            
+            # Go into the app directory.
+            cd motora-app
+
+            # Stop and remove any old running containers and their volumes.
+            # This prevents stale data and permission issues.
+            docker compose down --volumes
+
+            # Grant ownership to the current user to fix any permission errors
+            # from previous failed runs.
+            # sudo is needed here to reclaim ownership from root if necessary.
+            sudo chown -R $USER:$USER .
+
+            # --- DEPLOY NEW VERSION ---
+            
+            # Unpack the new archive, overwriting any old files.
+            # The 'tar' command is coming from the scp-action in the previous step
+            # which places it in the target directory (`~/motora-app`).
             tar -xzf deploy.tar.gz
             echo "✅ Deployment archive unpacked."
 
@@ -78,14 +97,11 @@ jobs:
             # Now, Docker Compose will find everything it needs:
             # compose.yaml, .env, and the docker-compose/nginx/ directory.
             
-            # Pull the latest image for the app service
+            # Pull the latest image for the app service to ensure we have it.
             docker compose pull app
 
-            # Bring down the old stack and remove any stale volumes
-            docker compose down --volumes
-
             # Start the new stack in detached mode.
-            # It will build the custom nginx image automatically.
+            # The --build flag tells it to build any images that have a 'build' section.
             docker compose up -d --build
 
             echo "🚀 Deployment to Azure VM successful!"
