@@ -30,6 +30,17 @@ done
 
 echo ".env file created successfully."
 
+echo "Waiting for database to be ready..."
+# Use a loop to try connecting to the database.
+# The `mysqladmin ping` command is perfect for this. It's a lightweight check.
+# The `-h` flag is for the host, `-u` for user, `-p` for password.
+# We redirect output to /dev/null to keep the logs clean.
+until mysqladmin ping -h"$DB_HOST" -u"$DB_USERNAME" -p"$DB_PASSWORD" --silent; do
+    echo "Database is unavailable - sleeping"
+    sleep 2
+done
+echo "Database is ready!"
+
 # Now that .env exists, we can run artisan commands
 # Clear any old cached config that might not have the .env file
 php artisan config:clear

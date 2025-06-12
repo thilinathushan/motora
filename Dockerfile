@@ -52,6 +52,7 @@ RUN apt-get update && apt-get install -y \
     libfreetype6 \
     zip \
     unzip \
+    mysql-client \
     # BUILD dependencies (these will be removed)
     libpng-dev \
     libxml2-dev \
