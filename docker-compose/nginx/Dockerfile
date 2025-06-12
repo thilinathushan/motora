@@ -1,20 +1,20 @@
 # Start from the official Nginx Alpine image
 FROM nginx:1.27.3-alpine
 
-# Set an argument for the user and group ID
+# Set arguments for the desired UID and GID
 ARG UID=1000
 ARG GID=1000
 
-# This is the idempotent part.
-# First, check if a group with GID 1000 exists. If not, create www-data with GID 1000.
-# Then, check if a user with UID 1000 exists. If not, create www-data with UID 1000
-# and add it to the www-data group. This logic prevents "already exists" errors.
-RUN if ! getent group ${GID} > /dev/null; then \
-        addgroup -g ${GID} www-data; \
-    fi && \
-    if ! getent passwd ${UID} > /dev/null; then \
-        adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G www-data -u ${UID} www-data; \
-    fi
+# This is the definitive "delete and recreate" logic.
+# It ensures no conflicts with the base image's users/groups.
+RUN \
+    # First, delete the user and group if they exist, to avoid conflicts.
+    if getent passwd www-data > /dev/null; then deluser www-data; fi && \
+    if getent group www-data > /dev/null; then delgroup www-data; fi && \
+    \
+    # Now, create our user and group with the correct IDs.
+    addgroup -g ${GID} www-data && \
+    adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G www-data -u ${UID} www-data
 
-# Tell Nginx to run as this user.
+# Tell Nginx to run its worker processes as our new www-data user.
 RUN sed -i 's/user  nginx;/user  www-data;/g' /etc/nginx/nginx.conf
