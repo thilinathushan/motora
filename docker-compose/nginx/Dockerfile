@@ -1,10 +1,20 @@
-# Start from the official Nginx Alpine image we are already using
+# Start from the official Nginx Alpine image
 FROM nginx:1.27.3-alpine
 
-# Create a 'www-data' user and group with the same UID (1000)
-# as our PHP container. This is the key to fixing all permissions.
-RUN addgroup -g 1000 www-data && \
-    adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G www-data -u 1000 www-data
+# Set an argument for the user and group ID
+ARG UID=1000
+ARG GID=1000
 
-# Tell Nginx's main configuration to run its worker processes as this new user.
+# This is the idempotent part.
+# First, check if a group with GID 1000 exists. If not, create www-data with GID 1000.
+# Then, check if a user with UID 1000 exists. If not, create www-data with UID 1000
+# and add it to the www-data group. This logic prevents "already exists" errors.
+RUN if ! getent group ${GID} > /dev/null; then \
+        addgroup -g ${GID} www-data; \
+    fi && \
+    if ! getent passwd ${UID} > /dev/null; then \
+        adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G www-data -u ${UID} www-data; \
+    fi
+
+# Tell Nginx to run as this user.
 RUN sed -i 's/user  nginx;/user  www-data;/g' /etc/nginx/nginx.conf
