@@ -47,15 +47,12 @@ php artisan migrate --force
 
 # 2. Now that tables exist, we can safely clear caches.
 echo "Clearing application caches..."
-php artisan config:clear
-php artisan cache:clear
-php artisan view:clear
-php artisan route:clear
+php artisan optimize:clear
 
 # 3. Generate key and cache config for production performance.
 echo "Generating key and caching config..."
 php artisan key:generate --force
-php artisan config:cache
+php artisan optimize
 
 # 4. Link storage.
 echo "Creating storage link..."
