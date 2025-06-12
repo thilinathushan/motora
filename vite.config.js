@@ -1,26 +1,32 @@
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 
-const env = env("APP_URL");
+export default defineConfig(({ command, mode }) => {
+    const env = loadEnv(mode, process.cwd(), "");
 
-export default defineConfig({
-    plugins: [
-        laravel({
-            input: [
-                // "resources/css/app.css",
-                "resources/scss/colors.scss",
-                "resources/js/app.js",
-            ],
-            refresh: true,
-        }),
-    ],
-    server: {
-        // host: "192.168.43.98",
-        host: "0.0.0.0",
-        port: 5173,
-        strictPort: true,
-        hmr: {
-            host: env,
-        },
-    },
+    const config = {
+        plugins: [
+            laravel({
+                input: [
+                    // "resources/css/app.css",
+                    "resources/scss/colors.scss",
+                    "resources/js/app.js",
+                ],
+                refresh: true,
+            }),
+        ],
+    };
+
+    if (command === "serve") {
+        config.server = {
+            host: "0.0.0.0",
+            port: 5173,
+            strictPort: true,
+            hmr: {
+                host: env.APP_URL,
+            },
+        };
+    }
+
+    return config;
 });
