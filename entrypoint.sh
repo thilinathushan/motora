@@ -3,6 +3,8 @@
 # Exit immediately if a command fails
 set -e
 
+echo "🚀 EntryPoint Activated at $(date)"
+
 # Use the existing .env.example as the template
 if [ ! -f /var/www/.env.example ]; then
     echo "ERROR: .env.example file not found!"
@@ -30,36 +32,37 @@ done
 
 echo ".env file created successfully."
 
+# --- WAIT FOR DATABASE SECTION ---
 echo "Waiting for database to be ready..."
-# Use a loop to try connecting to the database.
-# The `mysqladmin ping` command is perfect for this. It's a lightweight check.
-# The `-h` flag is for the host, `-u` for user, `-p` for password.
-# We redirect output to /dev/null to keep the logs clean.
 until mysqladmin ping -h"$DB_HOST" -u"$DB_USERNAME" -p"$DB_PASSWORD" --silent; do
     echo "Database is unavailable - sleeping"
     sleep 2
 done
 echo "Database is ready!"
+# --- END: WAIT FOR DATABASE SECTION ---
 
-# Now that .env exists, we can run artisan commands
-# Clear any old cached config that might not have the .env file
-php artisan config:clear
-php artisan cache:clear
-
-# Generate the application key. This will write to the .env file we just created.
-php artisan key:generate --force
-
-# Cache the configuration for performance
-php artisan config:cache
-
-# Run database migrations
+# 1. Run migrations FIRST to create all tables.
+echo "Running database migrations..."
 php artisan migrate --force
 
-# Create the storage link
+# 2. Now that tables exist, we can safely clear caches.
+echo "Clearing application caches..."
+php artisan config:clear
+php artisan cache:clear
+php artisan view:clear
+php artisan route:clear
+
+# 3. Generate key and cache config for production performance.
+echo "Generating key and caching config..."
+php artisan key:generate --force
+php artisan config:cache
+
+# 4. Link storage.
+echo "Creating storage link..."
 php artisan storage:link
 
-echo "👤 Running as: $(whoami)"
+# --- END OF ARTISAN COMMANDS ---
 
-# Start PHP-FPM as the main process
+echo "👤 Running as: $(whoami)"
 echo "Initialization complete. Starting PHP-FPM..."
 exec php-fpm
