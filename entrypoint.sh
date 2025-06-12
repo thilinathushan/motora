@@ -3,88 +3,52 @@
 # Exit immediately if a command fails
 set -e
 
-# Generate .env file from environment variables passed by Docker
-# echo "Generating .env file..."
-# # Use a heredoc to write the file. The variables like $APP_NAME will be
-# # substituted by the shell with the environment variables.
-# cat > /var/www/.env <<EOF
-# APP_NAME="${APP_NAME}"
-# APP_ENV="${APP_ENV}"
-# APP_KEY="${APP_KEY}"
-# APP_DEBUG="${APP_DEBUG}"
-# APP_URL="${APP_URL}"
+# Use the existing .env.example as the template
+if [ ! -f /var/www/.env.example ]; then
+    echo "ERROR: .env.example file not found!"
+    exit 1
+fi
 
-# LOG_CHANNEL="${LOG_CHANNEL}"
-# LOG_DEPRECATIONS_CHANNEL="${LOG_DEPRECATIONS_CHANNEL}"
-# LOG_LEVEL="${LOG_LEVEL}"
+echo "Generating .env file from .env.example and environment variables..."
 
-# DB_CONNECTION="${DB_CONNECTION}"
-# DB_HOST="${DB_HOST}"
-# DB_PORT="${DB_PORT}"
-# DB_DATABASE="${DB_DATABASE}"
-# DB_USERNAME="${DB_USERNAME}"
-# DB_PASSWORD="${DB_PASSWORD}"
+# Create a fresh .env file
+> /var/www/.env
 
-# EOF
+# Read the .env.example file, filter out comments and blank lines,
+# and then build the final .env file.
+grep -v -e '^#' -e '^\s*$' /var/www/.env.example | while IFS= read -r line; do
+    # Get the variable name (everything before the '=')
+    var_name=$(echo "$line" | cut -d '=' -f 1)
+    
+    # Get the value of that variable from the environment.
+    # The `${!var_name}` syntax is bash for indirect expansion.
+    var_value="${!var_name}"
+    
+    # Write "VAR_NAME=VAR_VALUE" to the .env file
+    echo "$var_name=$var_value" >> /var/www/.env
+done
 
-# echo ".env file created successfully."
+echo ".env file created successfully."
 
-# echo "🧪 Dumping Laravel DB config:"
+# Now that .env exists, we can run artisan commands
+# Clear any old cached config that might not have the .env file
+php artisan config:clear
+php artisan cache:clear
 
-echo "🚀 EntryPoint Activated at $(date)"
-echo "Starting container initialization..."
+# Generate the application key. This will write to the .env file we just created.
+php artisan key:generate --force
 
-# Check if Composer is installed
-# if ! command -v composer &> /dev/null; then
-#     echo "Composer is not installed. Please install Composer first."
-#     exit 1
-# fi
+# Cache the configuration for performance
+php artisan config:cache
 
-# echo "Composer version: $(composer --version)"
-
-# # Install PHP dependencies
-# composer update barryvdh/laravel-dompdf
-# composer update kornrunner/keccak
-# composer update simplito/elliptic-php
-
-# composer validate
-
-# composer install --no-interaction --prefer-dist --optimize-autoloader
-
-# Copy .env.example to .env if it doesn't exist
-# if [ ! -f /var/www/.env ]; then
-#     cp /var/www/.env.example /var/www/.env
-# fi
-# cp /var/www/.env.docker /var/www/.env
-
-# echo "🧪 Dumping Laravel DB config:"
-# php artisan tinker --execute="dump(config('database.connections.mysql'))"
-
-php artisan optimize
-
-# Generate application key
-php artisan key:generate
-
-# Run migrations
+# Run database migrations
 php artisan migrate --force
 
-# Create the storage link CORRECTLY inside the container
-echo "Creating storage link..."
+# Create the storage link
 php artisan storage:link
 
-# # Check environment and build assets
-# if [ "$APP_ENV" == "production" ]; then
-#     echo "Production environment detected, building assets..."
-#     npm install
-#     npm run build
-# else
-#     echo "Development environment detected, starting Vite..."
-#     npm install
-#     npm run dev &
-# fi
-
 echo "👤 Running as: $(whoami)"
-php-fpm -tt || true  # test PHP-FPM config
 
-# Start PHP-FPM
-exec php-fpm -F
+# Start PHP-FPM as the main process
+echo "Initialization complete. Starting PHP-FPM..."
+exec php-fpm
