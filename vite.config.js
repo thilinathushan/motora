@@ -18,9 +18,7 @@ export default defineConfig({
         port: 5173,
         strictPort: true,
         hmr: {
-            // host: "192.168.1.3",
-            // host: "192.168.43.98",
-            host: "40.82.178.113",
+            host: env("APP_URL"),
         },
     },
 });
