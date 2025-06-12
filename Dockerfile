@@ -88,6 +88,7 @@ COPY --from=builder --chown=$user:$user /var/www/storage ./storage
 COPY --from=builder --chown=$user:$user /var/www/artisan .
 COPY --from=builder --chown=$user:$user /var/www/composer.json .
 COPY --from=builder --chown=$user:$user /var/www/composer.lock .
+COPY --from=builder --chown=$user:$user /var/www/.env.example .
 
 # Copy the simplified entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
