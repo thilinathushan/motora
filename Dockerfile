@@ -33,6 +33,7 @@ RUN composer install --no-interaction --no-dev --optimize-autoloader
 # Build frontend assets
 # This creates the /public/build directory
 RUN npm install
+RUN echo "APP_URL=${APP_URL}" > .env
 RUN npm run build
 
 # ---- Stage 2: Final Production Image ----
