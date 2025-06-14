@@ -54,12 +54,12 @@ services:
     container_name: motora-phpmyadmin
     restart: unless-stopped
     environment:
-    PMA_HOST: motora-db
-    PMA_PORT: 3306
+      PMA_HOST: motora-db
+      PMA_PORT: 3306
     networks:
-    - motora
+      - motora
     depends_on:
-    - db
+      - db
 
 networks:
   motora:
