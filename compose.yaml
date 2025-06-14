@@ -49,6 +49,18 @@ services:
       - app
     # platform: linux/amd64
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: motora-phpmyadmin
+    restart: unless-stopped
+    environment:
+    PMA_HOST: motora-db
+    PMA_PORT: 3306
+    networks:
+    - motora
+    depends_on:
+    - db
+
 networks:
   motora:
     driver: bridge
