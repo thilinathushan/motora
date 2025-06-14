@@ -1,6 +1,9 @@
 # Start from the official Nginx Alpine image
 FROM nginx:1.27.3-alpine
 
+# ADD 'openssl' to the list of packages to install
+RUN apk add --no-cache openssl
+
 # Set arguments for the desired UID and GID
 ARG UID=1000
 ARG GID=1000
@@ -16,5 +19,13 @@ RUN \
     addgroup -g ${GID} www-data && \
     adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G www-data -u ${UID} www-data
 
+# This certificate is only for internal use to satisfy Cloudflare's handshake.
+# It will never be shown to the public.
+RUN mkdir -p /etc/nginx/ssl && \
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/nginx/ssl/nginx-selfsigned.key \
+    -out /etc/nginx/ssl/nginx-selfsigned.crt \
+    -subj "/C=US/ST=State/L=City/O=Organization/OU=Org/CN=localhost"
+    
 # Tell Nginx to run its worker processes as our new www-data user.
 RUN sed -i 's/user  nginx;/user  www-data;/g' /etc/nginx/nginx.conf
