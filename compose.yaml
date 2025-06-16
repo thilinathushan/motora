@@ -40,7 +40,6 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - app-code:/var/www
       - ./docker-compose/nginx/default.conf:/etc/nginx/conf.d/default.conf
@@ -61,6 +60,14 @@ services:
       - motora
     depends_on:
       - db
+
+  cloudflared-tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: motora-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token eyJhIjoiYmYzNTcxMTMzNDg3Yjc4NzFhNjg5NWIyY2QwMjU3YzEiLCJ0IjoiMDlkYWVmZjItYjRmYy00NzIwLWE4NDktMTU5ZWQ2ODk4MmE0IiwicyI6Ik0ySmtPV05qT0dRdFpEUmtZaTAwTkRZeUxXRTROVFF0TkRrMU16UmtPVFE0TkRBMiJ9
+    networks:
+      - motora
 
 networks:
   motora:
