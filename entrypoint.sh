@@ -21,7 +21,7 @@ echo "Generating .env file from .env.example and environment variables..."
 grep -v -e '^#' -e '^\s*$' /var/www/.env.example | while IFS= read -r line; do
     # Get the variable name (everything before the '=')
     var_name=$(echo "$line" | cut -d '=' -f 1)
-    
+
     # Get the value of that variable from the environment.
     # The `${!var_name}` syntax is bash for indirect expansion.
     var_value="${!var_name}"
@@ -59,8 +59,8 @@ echo "Creating storage link..."
 php artisan storage:link
 
 # 5. Run any additional Artisan commands
-echo "Running Database Seeder..."
-php artisan db:seed
+# echo "Running Database Seeder..."
+# php artisan db:seed
 
 # --- END OF ARTISAN COMMANDS ---
 
