@@ -25,7 +25,7 @@ grep -v -e '^#' -e '^\s*$' /var/www/.env.example | while IFS= read -r line; do
     # Get the value of that variable from the environment.
     # The `${!var_name}` syntax is bash for indirect expansion.
     var_value="${!var_name}"
-    
+
     # Write "VAR_NAME=VAR_VALUE" to the .env file
     echo "$var_name=$var_value" >> /var/www/.env
 done
@@ -57,6 +57,10 @@ php artisan optimize
 # 4. Link storage.
 echo "Creating storage link..."
 php artisan storage:link
+
+# 5. Run any additional Artisan commands
+echo "Running Database Seeder..."
+php artisan db:seed
 
 # --- END OF ARTISAN COMMANDS ---
 
