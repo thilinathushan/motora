@@ -75,9 +75,8 @@ jobs:
             # Go into the app directory.
             cd motora-app
 
-            # Stop and remove any old running containers and their volumes.
-            # This prevents stale data and permission issues.
-            docker compose down --volumes
+            # Stop and remove any old running containers.
+            docker compose down
 
             # Grant ownership to the current user to fix any permission errors
             # from previous failed runs.
@@ -85,7 +84,7 @@ jobs:
             sudo chown -R $USER:$USER .
 
             # --- DEPLOY NEW VERSION ---
-            
+
             # Unpack the new archive, overwriting any old files.
             # The 'tar' command is coming from the scp-action in the previous step
             # which places it in the target directory (`~/motora-app`).
@@ -98,7 +97,7 @@ jobs:
 
             # Now, Docker Compose will find everything it needs:
             # compose.yaml, .env, and the docker-compose/nginx/ directory.
-            
+
             # Pull the latest image for the app service to ensure we have it.
             docker compose pull app
 

@@ -58,9 +58,23 @@ php artisan optimize
 echo "Creating storage link..."
 php artisan storage:link
 
-# 5. Run any additional Artisan commands
-# echo "Running Database Seeder..."
-# php artisan db:seed
+INIT_LOCK_FILE="/var/www/storage/app/.initialized"
+
+if [ ! -f "$INIT_LOCK_FILE" ]; then
+    echo "🌱 First-time setup detected."
+    echo "Running migrations and seeding database..."
+
+    php artisan migrate --force
+    php artisan db:seed --force
+
+    echo "Creating initialization lock file..."
+    touch "$INIT_LOCK_FILE"
+    echo "✅ First-time setup complete."
+else
+    echo "🔁 Subsequent deployment detected."
+    echo "Running migrations only..."
+    php artisan migrate --force
+fi
 
 # --- END OF ARTISAN COMMANDS ---
 
