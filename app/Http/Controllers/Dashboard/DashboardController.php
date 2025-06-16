@@ -673,6 +673,9 @@ class DashboardController extends Controller
 
     public function faultsPredictionReport(Request $request)
     {
+        // Set the maximum execution time for THIS request only to 95 seconds.
+        ini_set('max_execution_time', 95);
+        
         $validated = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
             'registration_number' => 'required|max:255',
