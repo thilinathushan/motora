@@ -58,6 +58,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     default-mysql-client \
     supervisor \
+    rsync \
     # BUILD dependencies (these will be removed)
     libgmp-dev \
     libpng-dev \
@@ -102,6 +103,8 @@ COPY --from=builder --chown=$user:$user /var/www/.env.example .
 # Copy the simplified entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
+COPY --chown=$user:$user . /var/www-pristine
 
 # Set permissions
 RUN chown -R $user:$user /var/www

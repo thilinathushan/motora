@@ -3,6 +3,13 @@
 # Exit immediately if a command fails
 set -e
 
+echo "Syncing application code to volume..."
+# Use rsync to efficiently copy new/changed files from the pristine
+# source in the image to the volume mount point.
+# The --delete flag removes any old files in the volume that are no longer in the source.
+rsync -a --delete /var/www-pristine/ /var/www/
+echo "✅ Code sync complete."
+
 echo "🚀 EntryPoint Activated at $(date)"
 
 # Use the existing .env.example as the template
