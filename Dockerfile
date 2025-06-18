@@ -54,6 +54,7 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     default-mysql-client \
+    supervisor \
     # BUILD dependencies (these will be removed)
     libgmp-dev \
     libpng-dev \
@@ -77,6 +78,8 @@ RUN groupmod -g $uid $user && \
     usermod -u $uid -d /var/www $user
 
 WORKDIR /var/www
+
+COPY docker-configs/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy the built application files from the builder stage
 COPY --from=builder --chown=$user:$user /var/www/vendor ./vendor
