@@ -16,6 +16,7 @@ services:
     depends_on:
       - db
     # command: ["./entrypoint.sh"]
+    command: app
 
   db:
     image: mysql
@@ -74,9 +75,6 @@ services:
     image: ${DOCKER_USERNAME}/motora:latest
     container_name: motora-worker
     restart: unless-stopped
-    # The container's main command is now to start the supervisord daemon.
-    # The -n flag tells it to run in the foreground, which is required for Docker.
-    command: /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
     env_file: .env
     volumes:
       - app-code:/var/www
@@ -85,6 +83,7 @@ services:
     depends_on:
       - app
       - db
+    command: worker
 
 networks:
   motora:

@@ -41,39 +41,50 @@ done
 echo "Database is ready!"
 # --- END: WAIT FOR DATABASE SECTION ---
 
-# 1. Run migrations FIRST to create all tables.
-echo "Running database migrations..."
-php artisan migrate --force
+role=${1:-app} # Default to 'app' if no role is provided
 
-# 2. Now that tables exist, we can safely clear caches.
-echo "Clearing application caches..."
-php artisan optimize:clear
+if [ "$role" = "app" ]; then
+    # --- ROLE-SPECIFIC SETUP (Runs only for the App container) ---
 
-# 3. Generate key and cache config for production performance.
-echo "Generating key and caching config..."
-php artisan key:generate --force
-php artisan optimize
+    echo "Running APP container setup..."
 
-# 4. Link storage.
-echo "Creating storage link..."
-php artisan storage:link
-
-INIT_LOCK_FILE="/var/www/storage/app/.initialized"
-
-if [ ! -f "$INIT_LOCK_FILE" ]; then
-    echo "🌱 First-time setup detected."
-    echo "Running migrations and seeding database..."
-
+    # Run migrations, generate keys, and perform first-time setup.
+    # The worker container does not need to do this.
     php artisan migrate --force
-    php artisan db:seed --force
+    php artisan key:generate --force
+    php artisan storage:link
 
-    echo "Creating initialization lock file..."
-    touch "$INIT_LOCK_FILE"
-    echo "✅ First-time setup complete."
+    # The initialization lock file logic
+    INIT_LOCK_FILE="/var/www/storage/app/.initialized"
+    if [ ! -f "$INIT_LOCK_FILE" ]; then
+        echo "🌱 First-time setup: Seeding database..."
+        php artisan db:seed --force
+        touch "$INIT_LOCK_FILE"
+        echo "✅ Seeding complete. Lock file created."
+    fi
+
+    # For production, it's best to cache everything after all setup is done.
+    echo "Caching configuration for production..."
+    php artisan optimize
+
+    # --- ROLE-SPECIFIC EXECUTION ---
+    echo "Initialization complete. Starting PHP-FPM..."
+    exec php-fpm
+
+elif [ "$role" = "worker" ]; then
+    # --- ROLE-SPECIFIC EXECUTION (Runs only for the Worker container) ---
+
+    echo "Running WORKER container setup..."
+    # A worker just needs the config to be ready.
+    php artisan config:cache
+
+    echo "Initialization complete. Starting Supervisor..."
+    exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
+
 else
-    echo "🔁 Subsequent deployment detected."
-    echo "Running migrations only..."
-    php artisan migrate --force
+    # Allow running other arbitrary commands
+    echo "Running custom command: $@"
+    exec "$@"
 fi
 
 # --- END OF ARTISAN COMMANDS ---
