@@ -14,7 +14,11 @@ else
     echo "VENDOR DETECTED: Performing code update (excluding vendor)..."
     # If autoload.php exists, it's a subsequent deployment.
     # Sync the app code but leave the vendor directory untouched to preserve it.
-    rsync -a --delete --exclude 'vendor' /var/www-pristine/ /var/www/
+    rsync -a --delete \
+        --exclude 'vendor' \
+        --exclude 'public/build' \
+        --exclude 'storage' \
+        /var/www-pristine/ /var/w/ww/
     echo "✅ Application code sync complete."
 fi
 

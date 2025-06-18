@@ -104,7 +104,7 @@ COPY --from=builder --chown=$user:$user /var/www/.env.example .
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-COPY --chown=$user:$user . /var/www-pristine
+COPY --from=builder --chown=$user:$user . /var/www-pristine
 
 # Set permissions
 RUN chown -R $user:$user /var/www
