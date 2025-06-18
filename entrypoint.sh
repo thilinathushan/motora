@@ -3,12 +3,20 @@
 # Exit immediately if a command fails
 set -e
 
-echo "Syncing application code to volume..."
-# Use rsync to efficiently copy new/changed files from the pristine
-# source in the image to the volume mount point.
-# The --delete flag removes any old files in the volume that are no longer in the source.
-rsync -a --delete --exclude 'vendor' /var/www-pristine/ /var/www/
-echo "✅ Code sync complete."
+# First, check if the vendor directory has been initialized in the volume.
+if [ ! -f "/var/www/vendor/autoload.php" ]; then
+    echo "NO VENDOR DETECTED: Performing first-time code initialization..."
+    # If autoload.php is missing, it's a fresh or corrupted volume.
+    # Copy EVERYTHING from the pristine source, including the vendor directory.
+    rsync -a /var/www-pristine/ /var/www/
+    echo "✅ Full code sync complete."
+else
+    echo "VENDOR DETECTED: Performing code update (excluding vendor)..."
+    # If autoload.php exists, it's a subsequent deployment.
+    # Sync the app code but leave the vendor directory untouched to preserve it.
+    rsync -a --delete --exclude 'vendor' /var/www-pristine/ /var/www/
+    echo "✅ Application code sync complete."
+fi
 
 echo "🚀 EntryPoint Activated at $(date)"
 
