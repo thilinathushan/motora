@@ -85,26 +85,14 @@ WORKDIR /var/www
 
 COPY docker-configs/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Copy the built application files from the builder stage
-COPY --from=builder --chown=$user:$user /var/www/vendor ./vendor
-COPY --from=builder --chown=$user:$user /var/www/public ./public
-COPY --from=builder --chown=$user:$user /var/www/app ./app
-COPY --from=builder --chown=$user:$user /var/www/bootstrap ./bootstrap
-COPY --from=builder --chown=$user:$user /var/www/config ./config
-COPY --from=builder --chown=$user:$user /var/www/database ./database
-COPY --from=builder --chown=$user:$user /var/www/resources ./resources
-COPY --from=builder --chown=$user:$user /var/www/routes ./routes
-COPY --from=builder --chown=$user:$user /var/www/storage ./storage
-COPY --from=builder --chown=$user:$user /var/www/artisan .
-COPY --from=builder --chown=$user:$user /var/www/composer.json .
-COPY --from=builder --chown=$user:$user /var/www/composer.lock .
-COPY --from=builder --chown=$user:$user /var/www/.env.example .
+WORKDIR /
+COPY --from=builder --chown=www-data:www-data /var/www /var/www-pristine
+COPY --from=builder --chown=www-data:www-data /var/www /var/www
+WORKDIR /var/www
 
 # Copy the simplified entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
-
-COPY --from=builder --chown=$user:$user . /var/www-pristine
 
 # Set permissions
 RUN chown -R $user:$user /var/www

@@ -3,23 +3,22 @@
 # Exit immediately if a command fails
 set -e
 
-# First, check if the vendor directory has been initialized in the volume.
-if [ ! -f "/var/www/vendor/autoload.php" ]; then
-    echo "NO VENDOR DETECTED: Performing first-time code initialization..."
-    # If autoload.php is missing, it's a fresh or corrupted volume.
-    # Copy EVERYTHING from the pristine source, including the vendor directory.
-    rsync -a /var/www-pristine/ /var/www/
-    echo "✅ Full code sync complete."
+echo "Syncing application state..."
+
+# Check if the volume has been initialized by looking for the lock file.
+if [ ! -f "/var/www/storage/app/.initialized" ]; then
+    echo "FIRST RUN: Initializing volume from pristine source..."
+    # On the very first run, we don't need to sync, because the Dockerfile
+    # already copied the full application into the /var/www mount point.
+    # We just need to create the lock file later.
+    echo "✅ Volume initialized by Docker."
 else
-    echo "VENDOR DETECTED: Performing code update (excluding vendor)..."
-    # If autoload.php exists, it's a subsequent deployment.
-    # Sync the app code but leave the vendor directory untouched to preserve it.
-    rsync -a --delete \
-        --exclude 'vendor' \
-        --exclude 'public/build' \
-        --exclude 'storage' \
-        /var/www-pristine/ /var/www/
-    echo "✅ Application code sync complete."
+    echo "SUBSEQUENT RUN: Updating code, preserving storage..."
+    # On future runs, update the code but protect user data.
+    # The 'vendor' and 'public/build' directories will be updated correctly
+    # because they exist in the /var/www-pristine source.
+    rsync -a --delete --exclude '/storage' /var/www-pristine/ /var/www/
+    echo "✅ Code update sync complete."
 fi
 
 echo "🚀 EntryPoint Activated at $(date)"
