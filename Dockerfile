@@ -103,6 +103,9 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 # Set permissions
 RUN chown -R $user:$user /var/www
 
+RUN mkdir -p /var/log/supervisor
+RUN chown -R $user:$user /var/log/supervisor
+
 USER $user
 
 EXPOSE 9000
