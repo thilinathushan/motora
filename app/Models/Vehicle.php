@@ -51,7 +51,8 @@ class Vehicle extends Model
         'certificate_url',
         'is_blockchain_created',
         'blockchain_created_at',
-        'transaction_id'
+        'transaction_id',
+        'certificate_ipfs_hash',
     ];
 
     public function users()
