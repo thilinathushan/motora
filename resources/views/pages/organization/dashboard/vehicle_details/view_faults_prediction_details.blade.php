@@ -58,7 +58,7 @@
                                 <p><strong>Engine Number:</strong> {{ $result['engine_no'] }}</p>
                             </div>
                             <div class="col-md-12 text-center mt-5">
-                                <form  action="{{ route('dashboard.faultsPredictionReport') }}" method="post">
+                                <form  action="{{ route('dashboard.report.generate') }}" method="post">
                                     @csrf
 
                                     <input type="hidden" name="vehicle_id" value="{{ $result['vehicle_id'] }}">

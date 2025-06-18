@@ -138,6 +138,8 @@
                                     </div>
                                 @endif
 
+                                @livewire('report-notifier-manager')
+
                                 @yield('content')
                             </div>
                         </div>

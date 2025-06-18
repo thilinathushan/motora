@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateFaultsPredictionPdfReport;
+use App\Jobs\GenerateFaultsPredictionReport;
 use App\Models\District;
+use App\Models\FaultsPredictionReports;
 use App\Models\Location;
 use App\Models\LocationOrganization;
 use App\Models\Organization;
@@ -17,11 +20,9 @@ use App\Models\VehicleRevenueLicense;
 use App\Models\VehicleService;
 use App\Models\VehicleVerificationHistory;
 use Carbon\Carbon;
-use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Barryvdh\DomPDF\Facade\PDF;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 
@@ -671,11 +672,11 @@ class DashboardController extends Controller
         return view('pages.organization.dashboard.vehicle_details.view_faults_prediction_details', compact('result'));
     }
 
-    public function faultsPredictionReport(Request $request)
+    public function generateReport(Request $request)
     {
         // Set the maximum execution time for THIS request only to 95 seconds.
         ini_set('max_execution_time', 95);
-        
+
         $validated = $request->validate([
             'vehicle_id' => 'required|exists:vehicles,id',
             'registration_number' => 'required|max:255',
@@ -734,12 +735,6 @@ class DashboardController extends Controller
             return redirect()->route('dashboard.faultsPredictionView')->withInput()->with('error', 'Vehicle service record not found.');
         }
 
-        // report Date
-        $reportDate = Carbon::now()->format('Y-m-d');
-
-        $previous_owners = json_decode($vehicle->previous_owners);
-        $totalRegCount = is_array($previous_owners) ? count($previous_owners) + 1 : 0 + 1;
-
         $isMotorCycle = $vehicle->class_of_vehicle === 'MOTOR CYCLE';
         $isMotorTricycle = $vehicle->class_of_vehicle === 'MOTOR TRICYCLE';
 
@@ -778,139 +773,90 @@ class DashboardController extends Controller
                 $record = Arr::except($record, ['is_radiator_oil_chane']);
             }
         }
-
-        // get the ML Result
-        $mlResult = $this->getResultFromMLModel($record);
-        $aiData = [];
-
-        if(is_array($mlResult)){
-            try {
-                $aiResult = $this->getPredictionFromAI($mlResult);
-
-                if (!is_array($aiResult)) {
-                    $aiData['explanation'] = 'No Predictions Available';
-                }else{
-                    $aiData = $aiResult;
-                }
-            } catch (\Exception $e) {
-                $aiData['explanation'] = 'Error connecting to prediction service.';
-            }
-        } else {
-            $mlData = $mlResult->getData(true);
-            if (isset($mlData['error'])) {
-                // ML response contains an error
-                $aiData['explanation'] = 'No Predictions Available - Prediction Model Issue.';
-            }
-        }
-
-        return view('pages.organization.dashboard.vehicle_details.view_faults_predection_report', compact('vehicle', 'vehicleEmissions', 'aiData', 'reportDate', 'totalRegCount'));
-    }
-
-    public function getResultFromMLModel($record)
-    {
-        // Get the current model version
-        $selectedModelVersion = session('user_selected_model', Config::get('prediction_model.default'));
-        $model = Config::get('prediction_model.models')[$selectedModelVersion];
-
-        // Define tthe ML Model Endpoint
-        $mlEndPoint = $model['mlModel'];
-
-        // Initialize Guzzle HTTP Client
-        $client = new Client();
-
-        try {
-            // Make the POST request to the ML model endpoint
-            $response = $client->post($mlEndPoint, [
-                'json' => $record,
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ],
-            ]);
-
-            // Get the response body
-            $responseBody = $response->getBody()->getContents();
-
-            // Decode the JSON response
-            $responseData = json_decode($responseBody, true);
-
-            // Return the response data
-            return $responseData;
-        } catch (\Throwable $th) {
-            // Handle any exceptions or errors
-            return response()->json([
-                'error' => 'Failed to get response from ML model',
-                // 'message' => $th->getMessage()
-            ]);
-        }
-    }
-
-    public function getPredictionFromAI($mlResult)
-    {
-        // Get the current model version
-        $selectedModelVersion = session('user_selected_model', Config::get('prediction_model.default'));
-        $model = Config::get('prediction_model.models')[$selectedModelVersion];
-
-        // Define the AI endpoint
-        $aiEndpoint = $model['aiModel'];
-
-        // Initialize Guzzle HTTP Client
-        $client = new Client();
-
-        try {
-            // Make the POST request to the AI endpoint
-            $response = $client->post($aiEndpoint, [
-                'json' => $mlResult,
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ],
-            ]);
-
-            // Get the response body
-            $responseBody = $response->getBody()->getContents();
-
-            // Decode the JSON response
-            $responseData = json_decode($responseBody, true);
-
-            // Return the response data
-            return $responseData;
-        } catch (\Throwable $th) {
-            // Handle any exceptions or errors
-            return response()->json([
-                'error' => 'Failed to get response from ML model',
-                // 'message' => $th->getMessage()
-            ]);
-        }
-    }
-
-    public function downloadMotoraReport(Request $request)
-    {
-        $response = $request->all();
-
-        $vehicle = json_decode($response['vehicle_details']);
-        $vehicleEmissions = json_decode($response['vehicleEmissions']);
-        $aiData = json_decode($response['aiData']);
-        $reportDate = $response['reportDate'];
-        $totalRegCount = $response['totalRegCount'];
-
-        // Generate a filename based on the vehicle registration number
-        $filename = 'Motora Vehicle Report - ' . $vehicle->registration_number . '.pdf';
-
-        /// Generate the PDF
-        $pdf = PDF::loadView('pages.organization.dashboard.vehicle_details.motora_report',
-            compact('vehicle', 'vehicleEmissions', 'aiData', 'reportDate', 'totalRegCount'));
-
-        // Customize PDF settings if needed
-        $pdf->setPaper('a4', 'portrait');
-        $pdf->setOptions([
-            'defaultFont' => 'sans-serif',
-            'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => true,
-            'isJavascriptEnabled' => true,
+        // Create a new FaultsPredictionReports record
+        $report = FaultsPredictionReports::create([
+            'vehicle_id' => $vehicle->id,
+            'user_id' => Auth::guard('organization_user')->check() ? Auth::guard('organization_user')->user()->id : Auth::guard('web')->user()->id,
         ]);
 
-        // Return the PDF as a download
-        return $pdf->download($filename);
+        $selectedModelVersion = session('user_selected_model', Config::get('prediction_model.default'));
+
+        // Dispatch the job to generate the report
+        GenerateFaultsPredictionReport::dispatch($report, $record, $selectedModelVersion);
+
+        event('newReportStarted', $report->id);
+        return redirect()->route('dashboard');
+    }
+
+    public function showFaultsPredictionReport(FaultsPredictionReports $report)
+    {
+        if ($report->status !== 'completed') {
+            // Maybe redirect back to status page if not ready
+            return redirect()->route('dashboard.report.status', ['report' => $report->id])
+                ->with('error', 'Report is not ready yet. Please check back later.');
+        }
+        // Unpack the data we stored in the database
+        $vehicle = $report->vehicle;
+        $vehicleEmissions = VehicleEmission::select([
+                'id',
+                'vehicle_id',
+                'odometer',
+                'created_at',
+                'overall_status'
+            ])
+            ->where('vehicle_id', $vehicle->id)
+            ->orderBy('created_at', 'asc')
+            ->get();
+        $aiData = json_decode($report->ai_result, true);
+
+        // report Date
+        $reportDate = Carbon::now()->format('Y-m-d');
+
+        $previous_owners = json_decode($vehicle->previous_owners);
+        $totalRegCount = is_array($previous_owners) ? count($previous_owners) + 1 : 0 + 1;
+
+        return view('pages.organization.dashboard.vehicle_details.view_faults_predection_report', compact('vehicle', 'vehicleEmissions', 'aiData', 'reportDate', 'totalRegCount', 'report'));
+    }
+
+    public function checkReportStatus(FaultsPredictionReports $report)
+    {
+        // This page will have JavaScript to poll this endpoint
+        return response()->json(['status' => $report->status]);
+    }
+
+    public function startPdfGeneration(FaultsPredictionReports $report)
+    {
+        $report->update([
+            'pdf_status' => 'pending',
+            'pdf_path' => null,
+            'pdf_error_message' => null
+        ]);
+
+        GenerateFaultsPredictionPdfReport::dispatch($report);
+
+        event('newPdfJobStarted', $report->id);
+
+        return response()->json(['message' => 'PDF generation started.']);
+    }
+
+    public function checkPdfStatus(FaultsPredictionReports $report)
+    {
+        return response()->json([
+            'pdf_status' => $report->pdf_status,
+            'pdf_path' => $report->pdf_path,
+        ]);
+    }
+
+    public function downloadGeneratedPdf(FaultsPredictionReports $report)
+    {
+        if ($report->pdf_status !== 'completed' || is_null($report->pdf_path) || !Storage::disk('private')->exists($report->pdf_path)) {
+            abort(404, 'PDF not found or is not ready.');
+        }
+
+        // Generate a user-friendly filename for the download
+        $downloadFilename = 'Motora Vehicle Report - ' . $report->vehicle->registration_number . '.pdf';
+
+        // Serve the file from your private storage disk as a download
+        return Storage::disk('private')->download($report->pdf_path, $downloadFilename);
     }
 }

@@ -19,10 +19,20 @@ class ReauthenticationModal extends Component
     public $currentStep = 1;
     public $verificationSuccess = false;
     public $successMessage = '';
+    public string $connectButtonState = 'default';
 
     public function mount()
     {
         $this->resetModalState();
+    }
+
+    public function connect()
+    {
+        $this->connectButtonState = 'connecting';
+        $this->errorMessage = '';
+
+        // Dispatch a browser event to tell our JavaScript to open MetaMask.
+        $this->dispatch('start-metamask-connection');
     }
 
     #[On('show-crypto-modal')]
@@ -58,6 +68,7 @@ class ReauthenticationModal extends Component
         $this->connectedWalletAddress = $walletAddress;
         $this->errorMessage = '';
         $this->currentStep = 2;
+        $this->connectButtonState = 'default';
 
         // Save to session temporarily
         session(['temp_wallet_address' => $walletAddress]);
@@ -76,6 +87,7 @@ class ReauthenticationModal extends Component
         $this->errorMessage = 'Wallet connection failed: ' . $errorMessage;
         $this->walletConnected = false;
         $this->currentStep = 1;
+        $this->connectButtonState = 'default';
 
         // Emit error event for frontend
         $this->dispatch('wallet-connection-error', [

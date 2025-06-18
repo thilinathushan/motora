@@ -73,9 +73,17 @@ Route::controller(DashboardController::class)->group(function () {
     Route::get('/dashboard/vehicle/verifyVehicle/{id}', 'verifyVehicle')->name('dashboard.vehicle.verifyVehicle');
     Route::get('/dashboard/viewProfile', 'viewProfile')->name('dashboard.viewProfile');
     Route::get('/dashboard/vehicle_details/add_vehicle_reg_certificate/{id}', 'addVehicleRegCertificate')->name('dashboard.addVehicleRegCertificate');
-    Route::post('/dashboard/report/faults_prediction_report', 'faultsPredictionReport')->name('dashboard.faultsPredictionReport');
+    // Route::post('/dashboard/report/faults_prediction_report', 'faultsPredictionReport')->name('dashboard.faultsPredictionReport');
     Route::get('/dashboard/report/faults_prediction_view', 'faultsPredictionView')->name('dashboard.faultsPredictionView');
-    Route::post('/dashboard/report/downloadMotoraReport', 'downloadMotoraReport')->name('dashboard.vehicle.downloadMotoraReport');
+    // Route::post('/dashboard/report/downloadMotoraReport', 'downloadMotoraReport')->name('dashboard.vehicle.downloadMotoraReport');
+
+    Route::post('/generate-report', 'generateReport')->name('dashboard.report.generate');
+    Route::get('/report-status/{report}', 'checkReportStatus')->name('dashboard.report.status');
+    Route::get('/show-report/{report}', 'showFaultsPredictionReport')->name('dashboard.report.show');
+
+    Route::post('/report/{report}/generate-pdf', 'startPdfGeneration')->name('dashboard.report.generatePdf');
+    Route::get('/report/{report}/pdf-status', 'checkPdfStatus')->name('dashboard.report.pdfStatus');
+    Route::get('/report/{report}/download-pdf/{filename?}', 'downloadGeneratedPdf')->name('dashboard.report.downloadPdf');
 })->middleware(['auth:organization_user,web', 'verified']);
 
 Route::controller(DashboardOrganizationController::class)->group(function () {

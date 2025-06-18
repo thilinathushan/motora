@@ -49,11 +49,17 @@
                                                 </small>
                                             </div>
 
-                                            <button type="button" id="connectWalletBtn" class="btn btn-primary"
-                                                    onclick="connectWalletForVerification()">
-                                                <i class="fi fi-rr-wallet me-1"></i>
-                                                Connect MetaMask
-                                            </button>
+                                            @if ($connectButtonState === 'default')
+                                                <button type="button" wire:click="connect" wire:loading.attr="disabled" class="btn btn-primary d-inline-flex align-items-center">
+                                                    <i class="fi fi-rr-wallet me-1"></i>
+                                                    <span>Connect MetaMask</span>
+                                                </button>
+                                            @elseif ($connectButtonState === 'connecting')
+                                                <button type="button" class="btn btn-primary d-inline-flex align-items-center" disabled>
+                                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                    <span>Connecting...</span>
+                                                </button>
+                                            @endif
 
                                             <!-- Connection Status -->
                                             <div id="walletConnectionStatus" style="display: none;" class="mt-2">
@@ -164,6 +170,30 @@
                 signMessageForVerification(event[0].message, event[0].address);
             }
         });
+
+        @this.on('start-metamask-connection', async () => {
+
+            if (!window.metaMaskHandler) {
+                // If MetaMask isn't available, report the error back to Livewire
+                @this.call('handleWalletError', 'MetaMask handler is not available.');
+                return;
+            }
+
+            try {
+                // Try to connect the wallet
+                const address = await window.metaMaskHandler.connectWallet();
+                if (address) {
+                    // Success! Report the address back to Livewire.
+                    @this.call('handleWalletConnected', address);
+                } else {
+                    // Handle the case where the user closes the pop-up without choosing an account
+                    @this.call('handleWalletError', 'Connection returned no address.');
+                }
+            } catch (error) {
+                // Failure! Report the error message back to Livewire.
+                @this.call('handleWalletError', error.message || 'User rejected the request.');
+            }
+        });
     });
 
     async function checkInitialWalletStatus() {
@@ -195,40 +225,45 @@
         }
     }
 
-    async function connectWalletForVerification() {
-        const connectBtn = document.getElementById('connectWalletBtn');
+    // async function connectWalletForVerification() {
+    //     const connectBtn = document.getElementById('connectWalletBtn');
+    //     const spinnerSpan = document.getElementById('btn-spinner');
+    //     const textSpan = document.getElementById('btn-text');
 
-        if (!window.metaMaskHandler) {
-            // console.error('MetaMask handler instance is not available.');
-            return;
-        }
+    //     if (!window.metaMaskHandler) {
+    //         // console.error('MetaMask handler instance is not available.');
+    //         return;
+    //     }
 
-        // Update UI
-        if(connectBtn) {
-            connectBtn.disabled = true;
-            connectBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Connecting...';
-        }
+    //     connectBtn.disabled = true;
+    //     textSpan.style.display = 'none';
+    //     spinnerSpan.style.display = 'inline-flex';
 
-        try {
-            const address = await window.metaMaskHandler.connectWallet();
+    //     try {
+    //         const address = await window.metaMaskHandler.connectWallet();
 
-            if (address) {
-                // console.log('Wallet connected successfully:', address);
+    //         if (address) {
+    //             // console.log('Wallet connected successfully:', address);
 
-                // Call the existing Livewire method.
-                @this.call('handleWalletConnected', address);
-
-            } else {
-                if(connectBtn) {
-                    connectBtn.disabled = false;
-                    connectBtn.innerHTML = 'Connect MetaMask';
-                }
-            }
-        } catch (error) {
-            // console.error('Wallet connection failed:', error);
-            @this.call('handleWalletError', error.message || 'Connection failed.');
-        }
-    }
+    //             // Call the existing Livewire method.
+    //             @this.call('handleWalletConnected', address);
+    //             document.querySelector('#btn-text span').textContent = 'Connected!';
+    //             document.querySelector('#btn-text i').className = 'fi fi-rs-check-circle me-1 text-success';
+    //         } else {
+    //             if(connectBtn) {
+    //                 connectBtn.disabled = false;
+    //                 connectBtn.innerHTML = 'Connect MetaMask';
+    //             }
+    //         }
+    //     } catch (error) {
+    //         // console.error('Wallet connection failed:', error);
+    //         @this.call('handleWalletError', error.message || 'Connection failed.');
+    //     } finally {
+    //         connectBtn.disabled = false;
+    //         spinnerSpan.style.display = 'none';
+    //         textSpan.style.display = 'inline-flex';
+    //     }
+    // }
 
     async function signMessageForVerification(message, address) {
         if (typeof window.metaMaskHandler?.signMessage !== 'function') {

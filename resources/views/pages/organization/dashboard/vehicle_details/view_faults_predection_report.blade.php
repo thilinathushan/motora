@@ -327,7 +327,8 @@
             </div>
 
             <div class="my-4 w-100 text-center">
-                <form action="{{ route('dashboard.vehicle.downloadMotoraReport') }}" method="post">
+                @livewire('pdf-download-button', ['report' => $report])
+                {{-- <form action="{{ route('dashboard.vehicle.downloadMotoraReport') }}" method="post">
                     @csrf
                     <input type="hidden" name="vehicle_details" value="{{ $vehicle }}">
                     <input type="hidden" name="reportDate" value="{{ $reportDate }}">
@@ -336,7 +337,7 @@
                     <input type="hidden" name="aiData" value="{{ json_encode($aiData) }}">
 
                     <button type="submit" class="btn btn-primary">Download Report</button>
-                </form>
+                </form> --}}
             </div>
             <p class="mt-5 text-muted text-center">
                 The report may include incorrect predictions. Please use it as a reference and consult with a qualified

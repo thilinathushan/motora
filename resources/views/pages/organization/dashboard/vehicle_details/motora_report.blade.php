@@ -341,7 +341,7 @@
                                 <tbody>
                                     <tr>
                                         <td colspan="2" class="text-start">
-                                            <span class="fw-normal">{{ $aiData->explanation }}</span>
+                                            <span class="fw-normal">{{ $aiData['explanation'] ?? 'No explanation available.' }}</span>
                                         </td>
                                     </tr>
                                 </tbody>
