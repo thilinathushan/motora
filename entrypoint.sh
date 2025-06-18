@@ -103,6 +103,15 @@ elif [ "$role" = "worker" ]; then
     echo "Initialization complete. Starting Supervisor..."
     exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
 
+elif [ "$role" = "scheduler" ]; then
+    echo "Running SCHEDULER container..."
+    # This loop runs forever. It executes the Laravel scheduler,
+    # sleeps for 60 seconds, and then repeats.
+    while [ true ]
+    do
+      php /var/www/artisan schedule:run --verbose --no-interaction &
+      sleep 60
+    done
 else
     echo "Running custom command: $@"
     exec "$@"

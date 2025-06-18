@@ -85,6 +85,21 @@ services:
       - db
     command: worker
 
+  scheduler:
+    image: ${DOCKER_USERNAME}/motora:latest
+    container_name: motora-scheduler
+    restart: unless-stopped
+    # The command tells our entrypoint script to perform the 'scheduler' role
+    command: scheduler
+    env_file: .env
+    volumes:
+      - app-code:/var/www
+    networks:
+      - motora
+    depends_on:
+      - app
+      - db
+
 networks:
   motora:
     driver: bridge
