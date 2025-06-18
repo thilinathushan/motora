@@ -23,6 +23,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
+ARG CACHE_BUSTER
+LABEL cache_buster=${CACHE_BUSTER}
+
 # Copy source code
 COPY . .
 
