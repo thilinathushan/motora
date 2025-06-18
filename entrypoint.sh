@@ -18,7 +18,7 @@ else
         --exclude 'vendor' \
         --exclude 'public/build' \
         --exclude 'storage' \
-        /var/www-pristine/ /var/w/ww/
+        /var/www-pristine/ /var/www/
     echo "✅ Application code sync complete."
 fi
 
