@@ -6,8 +6,8 @@ return [
         'v1' => [
             'modelVersion' => 'v1',
             'modelName' => 'MPM v1',
-            'mlModel' => 'https://motora-ai-ml-app.yellowtree-add59892.southindia.azurecontainerapps.io/predict',
-            'aiModel' => 'https://motora-ai-ml-app.yellowtree-add59892.southindia.azurecontainerapps.io/output',
+            'mlModel' => 'https://motora-ai-ml-app.kindmushroom-23aeb924.southindia.azurecontainerapps.io/predict',
+            'aiModel' => 'https://motora-ai-ml-app.kindmushroom-23aeb924.southindia.azurecontainerapps.io/output',
         ]
     ],
     'default' => 'v1'

@@ -12,7 +12,7 @@
                 </p>
 
             </div>
-            <div class="p-4 rounded-4">
+            <div class="rounded-4">
                 <table class="table table-borderless table-striped align-middle shadow-sm rounded-3 overflow-hidden">
                     <thead>
                         <tr>
