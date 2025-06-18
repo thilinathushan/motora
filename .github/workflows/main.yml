@@ -33,10 +33,11 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           build-args: |
             APP_URL=${{ secrets.PROD_APP_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          no-cache: true
 
       # ===============================================================
       #  PART 2: DEPLOY TO VM (This is the simplified, correct part)
@@ -71,7 +72,7 @@ jobs:
 
             # Ensure the app directory exists.
             mkdir -p motora-app
-            
+
             # Go into the app directory.
             cd motora-app
 
